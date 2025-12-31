@@ -22,6 +22,12 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: [6, "Password must be at least 6 characters"],
     },
+    savedPosts: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Post",
+      },
+    ],
     profilePic: {
       type: String,
       default: "",
