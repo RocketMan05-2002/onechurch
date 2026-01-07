@@ -1,0 +1,6 @@
+@import url("https://fonts.googleapis.com/css2?family=Almendra+Display&family=Nova+Flat&display=swap");
+@import "tailwindcss";
+
+* {
+  font-family: "Nova Flat", system-ui;
+}
