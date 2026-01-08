@@ -17,14 +17,20 @@ app.use(
     credentials: true,
   })
 );
+// adding the universal error handler that handles any error passed by next(error) wherever in the whole code base
+app.use((err, req, res, next) => {
+  res.status(err.statusCode || 500).json({
+    message: err.message || "Internal Server Error",
+  });
+});
 
 // Database Connection
 // Database Connection
 console.log("Connecting to MongoDB at:", process.env.MONGO_URI);
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ MongoDB Connection Error:", err));
+  .then(() => console.log(" MongoDB Connected"))
+  .catch((err) => console.error(" MongoDB Connection Error:", err));
 
 // Routes
 import userRouter from "./routers/user.routes.js";
@@ -44,7 +50,7 @@ app.get("/", (req, res) => {
 
 // Global Error Handler
 app.use((err, req, res, next) => {
-  console.error("❌ Error:", err);
+  console.error(" Error:", err);
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal Server Error";
   res.status(statusCode).json({
@@ -58,5 +64,5 @@ app.use((err, req, res, next) => {
 // Start Server
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(` Server running on port ${PORT}`);
 });

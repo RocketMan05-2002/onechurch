@@ -1,6 +1,8 @@
 // todo -> logi  for church , signup  and generate access and refresh token for church verufyJWT is common for both the userschema and churchschema
 import ChurchModel from "../models/church.model.js";
 import PostModel from "../models/post.model.js";
+import UserModel from "../models/user.model.js";
+import ApiError from "../utils/ApiError.js";
 
 export const generateAccessAndRefereshTokens = async (churchId) => {
   try {
@@ -94,7 +96,6 @@ export const loginChurch = async (req, res, next) => {
     };
     res
       .status(200)
-      .cookie("accessToken", accessToken, options)
       .cookie("refreshToken", refreshToken, options)
       .json({ message: "Login successful", accessToken });
   } catch (error) {
@@ -106,7 +107,6 @@ export const logoutChurch = async (req, res, next) => {
   try {
     // clear the cookies and redirect to login page
     res
-      .clearCookie("accessToken", { httpOnly: true, secure: true })
       .clearCookie("refreshToken", { httpOnly: true, secure: true })
       .status(200)
       .json({ message: "Logout successful" });
@@ -152,17 +152,37 @@ export const changeChurchAvatar = async (req, res, next) => {
   }
 };
 
+// this controller will also tell if the user viewing the church profile is following it or not and if its a user so does it follow the curch or not
 export const getChurchProfile = async (req, res, next) => {
   try {
     const churchId = req.church._id;
+    const { userId } = req.body; // from the post data sent by frontend
+
     const church = await ChurchModel.findById(churchId).select(
       "name profilePic country address website followerCount isVerified bio postCount"
     );
+
     if (!church) {
       throw new ApiError(404, "Church not found");
     }
-    // add a boolean that if user follows this church or not
-    res.status(200).json({ church });
+
+    // making some bools to tell the frontend that the person viewing is the church itself or not
+    let isFollowing = false;
+    let isOwnProfile = false;
+
+    if (!userId) {
+      // No userId provided means the church is viewing its own profile
+      isOwnProfile = true;
+    } else {
+      // A user is viewing the church profile
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        throw new ApiError(404, "User not found");
+      }
+      isFollowing = church.followers.includes(userId);
+    }
+
+    res.status(200).json({ church, isFollowing, isOwnProfile });
   } catch (error) {
     next(error);
   }
