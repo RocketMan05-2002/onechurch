@@ -161,6 +161,7 @@ export const getChurchProfile = async (req, res, next) => {
     if (!church) {
       throw new ApiError(404, "Church not found");
     }
+    // add a boolean that if user follows this church or not
     res.status(200).json({ church });
   } catch (error) {
     next(error);
