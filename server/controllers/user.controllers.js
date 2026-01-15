@@ -20,7 +20,7 @@ const signAccessToken = (user) =>
   );
 
 export const registerUser = asyncHandler(async (req, res) => {
-  const { fullName, email, password, profilePic } = req.body;
+  const { fullName, email, password, profilePic, role } = req.body;
 
   if (!fullName || !email || !password) {
     throw new ApiError(400, "Full name, email, and password are required");
@@ -38,6 +38,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     email: email.toLowerCase(),
     password: hashedPassword,
     profilePic: profilePic || "",
+    role: role || "user",
   });
 
   return res.status(201).json({
@@ -94,6 +95,45 @@ export const logoutUser = asyncHandler(async (_req, res) => {
     .json({ message: "User logged out successfully" });
 });
 
+export const recordAmen = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user?._id);
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const lastAmen = user.lastAmenDate ? new Date(user.lastAmenDate) : null;
+  if (lastAmen) {
+    lastAmen.setHours(0, 0, 0, 0);
+  }
+
+  const diffTime = lastAmen ? today.getTime() - lastAmen.getTime() : null;
+  const diffDays = diffTime
+    ? Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    : null;
+
+  if (diffDays === 1) {
+    // Yesterday was the last amen, increment streak
+    user.prayerStreak += 1;
+  } else if (diffDays === 0) {
+    // Already did it today, do nothing or just return
+  } else {
+    // Missed a day or first time
+    user.prayerStreak = 1;
+  }
+
+  user.lastAmenDate = new Date();
+  await user.save();
+
+  return res.status(200).json({
+    message: "Amen recorded",
+    prayerStreak: user.prayerStreak,
+  });
+});
+
 export const getCurrentUser = asyncHandler(async (req, res) => {
-  return res.status(200).json({ user: buildSafeUser(req.user) });
+  const user = await User.findById(req.user?._id).select("-password");
+  return res.status(200).json({ user });
 });

@@ -1,4 +1,15 @@
-import { Heart, MessageCircle, Send, Bookmark } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  Send,
+  Bookmark,
+  EllipsisVertical,
+  Share2,
+  MessageSquare,
+} from "lucide-react";
+
+import { FaShare, FaPrayingHands } from "react-icons/fa";
+import { BiSolidCommentDetail } from "react-icons/bi";
 
 export default function PostCard({ post }) {
   return (
@@ -8,8 +19,8 @@ export default function PostCard({ post }) {
         className="
           absolute -inset-1
           rounded-2xl
-          bg-yellow-300/10 dark:bg-yellow-400/5
           blur-xl
+          bg-blue-300/10 ark:bg-blue-400/5
           pointer-events-none
         "
       />
@@ -19,14 +30,14 @@ export default function PostCard({ post }) {
         className="
           relative
           bg-white dark:bg-gray-950
-          border border-gray-200 dark:border-gray-800
+          dark:border-gray-800
           rounded-2xl
           shadow-sm
           overflow-hidden
         "
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between py-3 px-4">
           <div className="flex items-center gap-3">
             <img
               src={post.profileImage}
@@ -37,6 +48,7 @@ export default function PostCard({ post }) {
               {post.username}
             </span>
           </div>
+          <EllipsisVertical size={22} />
         </div>
 
         {/* Image */}
@@ -51,16 +63,26 @@ export default function PostCard({ post }) {
         {/* Actions */}
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-4">
-            <Heart className="cursor-pointer hover:scale-110 transition text-gray-700 dark:text-gray-300" />
-            <MessageCircle className="cursor-pointer hover:scale-110 transition text-gray-700 dark:text-gray-300" />
-            <Send className="cursor-pointer hover:scale-110 transition text-gray-700 dark:text-gray-300" />
+            <FaPrayingHands
+              size={26}
+              className="cursor-pointer hover:scale-110 transition text-gray-700 dark:text-gray-300"
+            />
           </div>
-          <Bookmark className="cursor-pointer hover:scale-110 transition text-gray-700 dark:text-gray-300" />
+          <div className="flex flex-row gap-5">
+            <BiSolidCommentDetail
+              size={25}
+              className="cursor-pointer hover:scale-110 transition text-gray-700 dark:text-gray-300"
+            />
+            <FaShare
+              size={22}
+              className="cursor-pointer hover:scale-110 transition text-gray-700 dark:text-gray-300"
+            />
+          </div>
         </div>
 
         {/* Likes */}
         <div className="px-4 text-sm font-medium text-gray-900 dark:text-gray-100">
-          {post.likes.toLocaleString()} likes
+          {post.likes.toLocaleString()} praises
         </div>
 
         {/* Caption */}

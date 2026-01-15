@@ -1,8 +1,9 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
-import Church from "../models/church.model.js";
+import { Minister } from "../models/minister.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-// Verifies JWT for either a User or a Church document.
+
+// Verifies JWT for either a User or a Minister document.
 export const verifyJwt = asyncHandler(async (req, res, next) => {
   const token =
     req.cookies?.accessToken ||
@@ -15,21 +16,21 @@ export const verifyJwt = asyncHandler(async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
-    // Try to resolve the subject as either a User or a Church.
-    const [user, church] = await Promise.all([
+    // Try to resolve the subject as either a User or a Minister.
+    const [user, minister] = await Promise.all([
       User.findById(decoded?._id).select("-password -refreshToken"),
-      Church.findById(decoded?._id).select("-password"),
+      Minister.findById(decoded?._id).select("-password"),
     ]);
 
-    const actor = user || church;
+    const actor = user || minister;
 
     if (!actor) {
       return res.status(401).json({ message: "Invalid Access Token" });
     }
 
-    if (church) {
-      req.church = church;
-      req.userType = "church";
+    if (minister) {
+      req.user = minister;
+      req.userType = "minister";
     } else {
       req.user = user;
       req.userType = "user";

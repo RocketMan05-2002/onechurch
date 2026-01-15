@@ -2,7 +2,13 @@ import { useState, useEffect } from "react";
 import LeftSidebar from "../components/LeftSidebar";
 import PostCard from "../components/PostCard";
 import TweetCard from "../components/forum/TweetCard";
-import { ImagePlus, Settings, Grid, MessageSquare } from "lucide-react";
+import {
+  ImagePlus,
+  Settings,
+  Grid,
+  MessageSquare,
+  Sparkles,
+} from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
 
@@ -44,9 +50,9 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-black text-gray-900 dark:text-gray-100 w-full">
+    <div className="min-h-screen flex bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 w-full">
       {/* Left Sidebar */}
-      <div className="w-36 flex-shrink-0 border-r border-gray-200 dark:border-gray-800 h-screen sticky top-0">
+      <div className="w-60 flex-shrink-0 border-r border-gray-200 dark:border-gray-800 h-screen sticky top-0">
         <LeftSidebar />
       </div>
 
@@ -84,65 +90,100 @@ export default function ProfilePage() {
               </p>
 
               {/* Stats Row */}
-              <div className="flex gap-6 mt-4 text-sm text-gray-500">
-                <span>
-                  <strong className="text-gray-900 dark:text-gray-100">
+              <div className="flex gap-8 mt-4 text-sm text-gray-500">
+                <div className="flex flex-col">
+                  <span className="text-gray-900 dark:text-gray-100 font-bold text-lg leading-tight">
                     {posts.length}
-                  </strong>{" "}
-                  Posts
-                </span>
-                <span>
-                  <strong className="text-gray-900 dark:text-gray-100">
+                  </span>
+                  <span className="text-[10px] uppercase font-black tracking-widest text-gray-400">
+                    Posts
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-gray-900 dark:text-gray-100 font-bold text-lg leading-tight">
                     {user.followerCount || 0}
-                  </strong>{" "}
-                  Followers
-                </span>
-                <span>
-                  <strong className="text-gray-900 dark:text-gray-100">
+                  </span>
+                  <span className="text-[10px] uppercase font-black tracking-widest text-gray-400">
+                    Followers
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-gray-900 dark:text-gray-100 font-bold text-lg leading-tight">
                     {user.followingCount || 0}
-                  </strong>{" "}
-                  Following
-                </span>
+                  </span>
+                  <span className="text-[10px] uppercase font-black tracking-widest text-gray-400">
+                    Following
+                  </span>
+                </div>
+                {user.role === "user" && (
+                  <div className="flex flex-col group cursor-help border-l border-gray-100 dark:border-gray-800 pl-8">
+                    <div className="flex items-center gap-1.5">
+                      <Sparkles size={16} className="text-green-500" />
+                      <span className="text-green-600 dark:text-green-400 font-black text-lg leading-tight">
+                        {user.prayerStreak || 0}
+                      </span>
+                    </div>
+                    <span className="text-[10px] uppercase font-black tracking-widest text-gray-400 group-hover:text-green-500 transition-colors">
+                      Prayer Streak
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Create Post Area (Simplified) */}
-        <div className="px-8 py-4 border-b border-gray-200 dark:border-gray-800">
-          <div className="flex gap-3">
+        {/* Action Area based on Role */}
+        <div className="px-8 py-6 border-b border-gray-100 dark:border-gray-900 bg-gray-50/50 dark:bg-gray-900/20">
+          <div className="flex gap-4">
             <img
               src={user.profilePic || "/logo2.jpg"}
-              className="w-10 h-10 rounded-full bg-gray-200"
+              className="w-12 h-12 rounded-full border-2 border-white dark:border-gray-800 shadow-sm"
             />
-            <input
-              placeholder="What's on your mind?"
-              className="flex-1 bg-transparent outline-none pt-2"
-            />
+            <div className="flex-1 flex flex-col gap-3">
+              <input
+                placeholder={
+                  user.role === "minister"
+                    ? "Share a message or update..."
+                    : "What's on your mind today?"
+                }
+                className="w-full bg-transparent outline-none text-gray-900 dark:text-gray-100 pt-3 text-lg placeholder:text-gray-400"
+              />
+              <div className="flex justify-between items-center">
+                <div className="flex gap-2">
+                  <button className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 text-green-600 transition-colors">
+                    <ImagePlus size={20} />
+                  </button>
+                </div>
+                <button className="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded-full font-bold text-sm transition-all shadow-md shadow-green-500/20 active:scale-95">
+                  {user.role === "minister" ? "Post Update" : "Tweet"}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white/80 dark:bg-black/80 backdrop-blur-md z-10">
+        <div className="flex border-b border-gray-100 dark:border-gray-900 sticky top-0 bg-white/95 dark:bg-black/95 backdrop-blur-xl z-10 transition-colors">
           <button
             onClick={() => setActiveTab("posts")}
-            className={`flex-1 py-4 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-900 transition flex justify-center items-center gap-2 ${
+            className={`flex-1 py-5 text-xs font-black uppercase tracking-[0.2em] transition-all flex justify-center items-center gap-3 ${
               activeTab === "posts"
-                ? "border-b-4 border-blue-500 text-gray-900 dark:text-white"
-                : "text-gray-500"
+                ? "border-b-2 border-green-500 text-green-600 dark:text-green-400"
+                : "text-gray-400 hover:text-gray-600"
             }`}
           >
-            <Grid size={18} /> Posts
+            <Grid size={16} /> Posts
           </button>
           <button
             onClick={() => setActiveTab("tweets")}
-            className={`flex-1 py-4 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-900 transition flex justify-center items-center gap-2 ${
+            className={`flex-1 py-5 text-xs font-black uppercase tracking-[0.2em] transition-all flex justify-center items-center gap-3 ${
               activeTab === "tweets"
-                ? "border-b-4 border-blue-500 text-gray-900 dark:text-white"
-                : "text-gray-500"
+                ? "border-b-2 border-green-500 text-green-600 dark:text-green-400"
+                : "text-gray-400 hover:text-gray-600"
             }`}
           >
-            <MessageSquare size={18} /> Tweets
+            <MessageSquare size={16} /> Tweets
           </button>
         </div>
 

@@ -1,0 +1,45 @@
+# API Endpoints List
+
+## Authentication
+
+- `POST /api/auth/register`: Register a new user or minister with role-specific fields.
+- `POST /api/auth/login`: Login for both users and ministers, returning role-specific JWT.
+- `POST /api/auth/logout`: Logout and clear session/cookies.
+- `GET /api/auth/me`: Get current authenticated user/minister profile.
+
+## Ministers
+
+- `GET /api/ministers`: Search and filter ministers by name, role, or location.
+- `GET /api/ministers/:id`: Get detailed profile of a specific minister.
+- `PUT /api/ministers/profile`: Update minister profile details.
+
+## Posts (Minister Exclusive Creation)
+
+- `POST /api/posts`: Create a new post (Ministers only).
+- `GET /api/posts`: Get global feed of posts with pagination.
+- `GET /api/posts/:id`: Get single post details.
+- `PUT /api/posts/:id`: Update a post.
+- `DELETE /api/posts/:id`: Delete a post.
+- `POST /api/posts/:id/like`: Like/Unlike a post.
+
+## Forum (Tweets)
+
+- `POST /api/tweets`: Create a new tweet in the forum (Users and Ministers).
+- `GET /api/tweets`: Get all tweets for the forum feed.
+- `GET /api/tweets/:id`: Get single tweet details.
+- `PUT /api/tweets/:id`: Update a tweet.
+- `DELETE /api/tweets/:id`: Delete a tweet.
+
+## Profile & Stats
+
+- `GET /api/users/:id/profile`: Get a user's profile including stats.
+- `POST /api/users/amen`: Increment prayer streak and log an "Amen" interaction.
+- `GET /api/users/streak`: Get current user's prayer streak data.
+
+## Search
+
+- `GET /api/search`: Global search across users and ministers based on query string.
+
+## Devotionals
+
+- `GET /api/devotionals/random`: Get a random daily devotional for the sidebar.

@@ -40,8 +40,8 @@ const postSchema = new mongoose.Schema(
     posterModel: {
       type: String,
       required: true,
-      enum: ["User", "Church"],
-      default: "Church",
+      enum: ["User", "Minister"],
+      default: "Minister",
     },
     thumbnail: {
       type: String,
@@ -57,7 +57,7 @@ const postSchema = new mongoose.Schema(
         },
         likerType: {
           type: String,
-          enum: ["User", "Church"],
+          enum: ["User", "Minister"],
           required: true,
         },
         likedAt: { type: Date, default: Date.now },

@@ -22,10 +22,14 @@ export default function LeftSidebar() {
   ];
 
   return (
-    <div className="flex flex-col h-full justify-between py-4 px-3">
+    <div className="flex flex-col h-full py-4 px-3 gap-6">
       {/* Logo */}
-      <div className="flex mb-4">
-        <img src="/logo2.jpg" alt="Logo" className="w-12 h-12 rounded-full" />
+      <div className="flex justify-center items-end gap-2 mb-4">
+        {/* <img src="/praise3.png" alt="Logo" className="w-12 h-12 rounded-full" /> */}
+        {/* <div className="text-xl font-semibold tracking-wide">
+          Believer&apos;s Ark
+        </div> */}
+        <img src="/logo5.png" alt="" className="w-64 h-28 rounded-full" />
       </div>
 
       {/* Navigation */}
@@ -34,7 +38,7 @@ export default function LeftSidebar() {
           item.to === "#" ? (
             <button
               key={idx}
-              className="flex items-center gap-3 px-4 py-2 w-full
+              className="flex items-center gap-6 px-4 py-2 w-full
                          rounded-lg transition
                          hover:bg-gray-200 dark:hover:bg-gray-700"
             >
@@ -46,7 +50,7 @@ export default function LeftSidebar() {
               key={idx}
               to={item.to}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-2 w-full rounded-lg transition
+                `flex items-center gap-6 px-4 py-2 w-full rounded-lg transition
                  ${
                    isActive
                      ? "bg-gray-200 dark:bg-gray-700 font-semibold"
@@ -62,10 +66,10 @@ export default function LeftSidebar() {
       </div>
 
       {/* Bottom Menu */}
-      <div className="relative">
+      <div className="absolute bottom-8">
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="flex items-center gap-3 px-4 py-2 w-full
+          className="flex items-center gap-6 px-4 py-2 w-full
                      rounded-lg transition
                      hover:bg-gray-200 dark:hover:bg-gray-700"
         >

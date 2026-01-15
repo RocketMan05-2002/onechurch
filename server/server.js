@@ -28,13 +28,15 @@ mongoose
 
 // Routes
 import userRouter from "./routers/user.routes.js";
-import churchRouter from "./routers/church.routes.js";
+import ministerRouter from "./routers/minister.routes.js";
 import postRouter from "./routers/post.routes.js";
+import tweetRouter from "./routers/tweet.routes.js";
 import searchRouter from "./routers/search.routes.js";
 
 app.use("/api/v1/users", userRouter);
-app.use("/api/v1/churches", churchRouter);
+app.use("/api/v1/ministers", ministerRouter);
 app.use("/api/v1/posts", postRouter);
+app.use("/api/v1/tweets", tweetRouter);
 app.use("/api/v1/search", searchRouter);
 
 // Health Check

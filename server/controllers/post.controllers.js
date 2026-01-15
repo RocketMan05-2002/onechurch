@@ -10,15 +10,15 @@ export const createPost = asyncHandler(async (req, res) => {
   }
 
   // Determine author
-  const authorId = req.user?._id || req.church?._id;
-  const authorType = req.userType === "user" ? "User" : "Church";
+  const authorId = req.user?._id;
+  const authorType = req.userType === "user" ? "User" : "Minister";
 
   if (!authorId) {
     throw new ApiError(401, "Unauthorized");
   }
 
   const post = await PostModel.create({
-    title: title || "Untitled", // Schema requires title but Forum UI doesn't have it? We might need to adjust schema or provide default.
+    title: title || "Untitled",
     body,
     media: media || [],
     mediaType: mediaType || "none",
@@ -30,27 +30,27 @@ export const createPost = asyncHandler(async (req, res) => {
 });
 
 export const getAllPosts = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10, userId, churchId } = req.query;
+  const { page = 1, limit = 10, userId, ministerId } = req.query;
   const skip = (page - 1) * limit;
 
   // Build filter object
   const filter = {};
   if (userId) filter.postedBy = userId;
-  if (churchId) filter.postedBy = churchId;
+  if (ministerId) filter.postedBy = ministerId;
 
   const posts = await PostModel.find(filter)
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(Number(limit))
-    .populate("postedBy", "fullName name profilePic avatarUrl email"); // Populate generic author.
+    .populate("postedBy", "fullName profilePic location email ministerType");
 
   return res.status(200).json({ posts });
 });
 
 export const toggleLikePost = asyncHandler(async (req, res) => {
   const { postId } = req.params;
-  const likerId = req.user?._id || req.church?._id;
-  const likerType = req.userType === "user" ? "User" : "Church";
+  const likerId = req.user?._id;
+  const likerType = req.userType === "user" ? "User" : "Minister";
 
   if (!likerId) throw new ApiError(401, "Unauthorized");
 

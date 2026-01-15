@@ -11,22 +11,21 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const storedType = localStorage.getItem("userType"); // 'user' or 'church'
-      if (!storedType) {
+      const storedRole = localStorage.getItem("role"); // 'user' or 'minister'
+      if (!storedRole) {
         setLoading(false);
         return;
       }
 
       try {
         const endpoint =
-          storedType === "church" ? "/churches/profile" : "/users/me";
+          storedRole === "minister" ? "/ministers/profile/me" : "/users/me";
         const { data } = await api.get(endpoint);
 
-        // Normalize response: user endpoint returns {user: ...}, church returns {church: ...}
-        setUser(data.user || data.church);
+        setUser(data.user || data.minister);
       } catch (error) {
         console.error("Auth check failed", error);
-        localStorage.removeItem("userType");
+        localStorage.removeItem("role");
         setUser(null);
       } finally {
         setLoading(false);
@@ -37,53 +36,45 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password, role) => {
-    // role is 'user', 'church', etc.
-    // If role is admin, we treat as user or separate?
-    // User requested 'admin' in UI but backend only has church and user models?
-    // user.controllers has 'role' field.
-    // church.controllers is for 'church' entity.
-
-    // For now assuming role 'church' goes to church endpoints, others to user.
-    const isChurch = role === "church";
-    const endpoint = isChurch ? "/churches/login" : "/users/login";
+    const isMinister = role === "minister";
+    const endpoint = isMinister ? "/ministers/login" : "/users/login";
 
     const { data } = await api.post(endpoint, { email, password });
 
-    setUser(data.user || data.church); // or data.church
-    localStorage.setItem("userType", isChurch ? "church" : "user");
+    setUser(data.user || data.minister);
+    localStorage.setItem("role", isMinister ? "minister" : "user");
     return data;
   };
 
   const register = async (formData, role) => {
-    const isChurch = role === "church";
+    const isMinister = role === "minister";
     const payload = {
-      fullName: formData.name, // Convert 'name' to 'fullName'
+      fullName: formData.name,
       email: formData.email,
       password: formData.password,
+      role: role,
     };
 
-    const endpoint = isChurch ? "/churches/register" : "/users/register";
+    const endpoint = isMinister ? "/ministers/register" : "/users/register";
     const { data } = await api.post(endpoint, payload);
 
-    setUser(data.user || data.church);
-    localStorage.setItem("userType", isChurch ? "church" : "user");
+    setUser(data.user || data.minister);
+    localStorage.setItem("role", isMinister ? "minister" : "user");
     return data;
   };
 
   const logout = async () => {
-    console.log("Logging out...");
-    const storedType = localStorage.getItem("userType");
+    const storedRole = localStorage.getItem("role");
     const endpoint =
-      storedType === "church" ? "/churches/logout" : "/users/logout";
+      storedRole === "minister" ? "/ministers/logout" : "/users/logout";
 
-    // Clear local state immediately
     setUser(null);
-    localStorage.removeItem("userType");
+    localStorage.removeItem("role");
 
     try {
       await api.post(endpoint);
     } catch (e) {
-      console.error("Logout error (background)", e);
+      console.error("Logout error", e);
     }
   };
 

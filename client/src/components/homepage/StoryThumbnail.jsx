@@ -36,19 +36,38 @@ export default function StoryThumbnail({ church, isWatched, onClick }) {
           />
         )}
 
-        {/* Image */}
-        <img
-          src={church.profileThumb}
-          alt={church.churchName}
-          className="
-            w-16 h-16
-            rounded-full
-            object-cover
-            border-2
-            border-white dark:border-black
-            bg-gray-100 dark:bg-gray-900
+        {/* Image & Hover Overlay */}
+        <div className="relative overflow-hidden rounded-full">
+          <img
+            src={church.profileThumb}
+            alt={church.churchName}
+            className="
+              w-20 h-20
+              rounded-full
+              object-cover
+              border-2
+              border-white dark:border-black
+              bg-gray-100 dark:bg-gray-900
+              transition-all duration-300
+              group-hover:opacity-0
+              group-hover:blur-[1px]
+            "
+          />
+          <div
+            className="
+            absolute inset-0 
+            flex items-center justify-center
+            bg-black/40
+            opacity-0 group-hover:opacity-100
+            transition-opacity duration-300
+            pointer-events-none
           "
-        />
+          >
+            <span className="text-white text-[10px] font-bold uppercase tracking-wider">
+              see story
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Name */}

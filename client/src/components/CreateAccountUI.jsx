@@ -24,6 +24,25 @@ export default function CreateAccountUI({ auth }) {
         </button>
       </p>
 
+      {/* Role Selector */}
+      <div className="flex gap-4 mt-6 justify-center">
+        {["user", "minister"].map((r) => (
+          <button
+            key={r}
+            onClick={() => updateField("role", r)}
+            className={`px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all
+              ${
+                formData.role === r
+                  ? "bg-white text-black border-white shadow-lg scale-105"
+                  : "bg-white/10 text-white/60 border-white/20 hover:bg-white/20"
+              } border
+            `}
+          >
+            {r}
+          </button>
+        ))}
+      </div>
+
       {/* Name */}
       <div className="mt-8 text-left">
         <label className="text-sm">What should we call you?</label>

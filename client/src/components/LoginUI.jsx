@@ -13,20 +13,22 @@ export default function LoginUI({ auth }) {
       </p>
 
       {/* Role Selector */}
-      <div className="mt-6 flex justify-center">
-        <div className="flex bg-white/20 backdrop-blur-md rounded-full p-1">
-          {["user", "church", "admin"].map((role) => (
-            <button
-              key={role}
-              onClick={() => updateField("role", role)}
-              className="px-4 py-1.5 text-sm rounded-full transition
-                         hover:bg-white/20
-                         focus:outline-none"
-            >
-              {role.charAt(0).toUpperCase() + role.slice(1)}
-            </button>
-          ))}
-        </div>
+      <div className="mt-8 flex justify-center gap-2">
+        {["user", "minister"].map((role) => (
+          <button
+            key={role}
+            onClick={() => updateField("role", role)}
+            className={`px-5 py-2 text-xs font-bold uppercase tracking-widest rounded-full transition-all
+              ${
+                auth.formData.role === role
+                  ? "bg-white text-black shadow-lg"
+                  : "bg-white/10 text-white/60 hover:bg-white/20"
+              }
+            `}
+          >
+            {role}
+          </button>
+        ))}
       </div>
 
       {/* Email */}

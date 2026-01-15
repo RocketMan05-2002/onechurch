@@ -34,10 +34,34 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["admin", "user"], // made a separate model for church removed the church field
+      enum: ["minister", "user"],
       default: "user",
-      immutable: true,
     },
+    prayerStreak: {
+      type: Number,
+      default: 0,
+    },
+    lastAmenDate: {
+      type: Date,
+      default: null,
+    },
+    following: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        refPath: "followingModel",
+      },
+    ],
+    followingModel: {
+      type: String,
+      enum: ["User", "Minister"],
+      default: "Minister",
+    },
+    followers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   {
     timestamps: true,
