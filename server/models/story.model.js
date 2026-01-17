@@ -44,5 +44,5 @@ const storySchema = new mongoose.Schema(
   }
 );
 
-const StoryModel = mongoose.model("Story", storySchema);
-export default StoryModel;
+const Story = mongoose.model("Story", storySchema);
+export default Story;
