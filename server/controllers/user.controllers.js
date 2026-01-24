@@ -67,11 +67,10 @@ export const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid password");
   }
 
-  const accessToken = signAccessToken(user);
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     maxAge: 60 * 60 * 1000, // 1 hour
   };
 
@@ -89,7 +88,7 @@ export const logoutUser = asyncHandler(async (_req, res) => {
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
   };
 
   return res
