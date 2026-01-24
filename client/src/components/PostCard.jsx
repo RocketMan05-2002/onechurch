@@ -1,17 +1,68 @@
-import {
-  Heart,
-  MessageCircle,
-  Send,
-  Bookmark,
-  EllipsisVertical,
-  Share2,
-  MessageSquare,
-} from "lucide-react";
+import { EllipsisVertical, Trash2, Edit3, X, Check } from "lucide-react";
 
 import { FaShare, FaPrayingHands } from "react-icons/fa";
 import { BiSolidCommentDetail } from "react-icons/bi";
+import { usePost } from "../context/PostContext";
+import { useAuth } from "../context/AuthContext";
+import { useState } from "react";
+import { formatDistanceToNow } from "date-fns";
 
 export default function PostCard({ post }) {
+  const { likePost, savePost, reportPost, deletePost, editPost } = usePost();
+  const { user } = useAuth();
+  const [liked, setLiked] = useState(
+    post.likes?.some((l) => l.liker === user?._id) || false,
+  );
+  const [saved, setSaved] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    title: post.title || "",
+    body: post.body || "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const author = post.postedBy || {};
+  const isOwner =
+    user &&
+    (user._id === author._id ||
+      user.id === author._id ||
+      user._id === author.id);
+
+  const handleLike = async () => {
+    setLiked(!liked);
+    await likePost(post._id);
+  };
+
+  const handleSave = async () => {
+    setSaved(!saved);
+    await savePost(post._id);
+  };
+
+  const handleReport = async () => {
+    // Simple prompt for now
+    const reason = prompt("Reason for reporting:");
+    if (reason) {
+      await reportPost(post._id, reason);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      await deletePost(post._id);
+    }
+    setShowMenu(false);
+  };
+
+  const handleEdit = async () => {
+    setSubmitting(true);
+    const success = await editPost(post._id, editData);
+    if (success) {
+      setIsEditing(false);
+    }
+    setSubmitting(false);
+  };
+
   return (
     <div className="relative">
       {/* Sacred halo / aura */}
@@ -40,39 +91,170 @@ export default function PostCard({ post }) {
         <div className="flex items-center justify-between py-3 px-4">
           <div className="flex items-center gap-3">
             <img
-              src={post.profileImage}
-              alt={post.username}
+              src={author.profilePic || "https://via.placeholder.com/40"}
+              alt={author.fullName}
               className="w-9 h-9 rounded-full object-cover ring-1 ring-gray-300 dark:ring-gray-700"
             />
-            <span className="font-medium text-sm text-gray-900 dark:text-gray-100">
-              {post.username}
-            </span>
+            <div className="flex flex-col">
+              <span className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                {author.fullName}
+              </span>
+              {author.location && (
+                <span className="text-xs text-gray-500">{author.location}</span>
+              )}
+            </div>
           </div>
-          <EllipsisVertical size={22} />
+          <div className="relative">
+            <button onClick={() => setShowMenu(!showMenu)}>
+              <EllipsisVertical size={22} className="text-gray-500" />
+            </button>
+
+            {showMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-100 dark:border-gray-800 z-50 py-2">
+                {isOwner ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        setIsEditing(true);
+                        setShowMenu(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                    >
+                      <Edit3 size={16} /> Edit Post
+                    </button>
+                    <button
+                      onClick={handleDelete}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition"
+                    >
+                      <Trash2 size={16} /> Delete Post
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => {
+                      handleReport();
+                      setShowMenu(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                  >
+                    Report Post
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Image */}
-        <div className="bg-black">
-          <img
-            src={post.image}
-            alt="Post"
-            className="w-full max-h-[420px] object-cover"
-          />
-        </div>
+        {/* Content Body */}
+        {isEditing ? (
+          <div className="px-4 pb-4 space-y-3">
+            <input
+              type="text"
+              value={editData.title}
+              onChange={(e) =>
+                setEditData({ ...editData, title: e.target.value })
+              }
+              className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none dark:text-white"
+              placeholder="Title (optional)"
+            />
+            <textarea
+              value={editData.body}
+              onChange={(e) =>
+                setEditData({ ...editData, body: e.target.value })
+              }
+              rows={4}
+              className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none dark:text-white resize-none"
+              placeholder="What's on your mind?"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setIsEditing(false)}
+                className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
+                disabled={submitting}
+              >
+                <X size={20} />
+              </button>
+              <button
+                onClick={handleEdit}
+                className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition"
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <Check size={20} />
+                )}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {post.title && (
+              <div className="px-4 pb-2 font-semibold text-gray-900 dark:text-gray-100">
+                {post.title}
+              </div>
+            )}
+
+            {post.body && (
+              <div className="px-4 py-2 text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
+                {post.body}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Media */}
+        {post.media && post.media.length > 0 && (
+          <div className="bg-black mt-2">
+            {/* Just show first media for now or carousel if multiple */}
+            {post.media[0].type === "image" ? (
+              <img
+                src={post.media[0].url}
+                alt="Post"
+                className="w-full max-h-[500px] object-cover"
+              />
+            ) : (
+              <video
+                src={post.media[0].url}
+                controls
+                className="w-full max-h-[500px]"
+              />
+            )}
+          </div>
+        )}
 
         {/* Actions */}
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-4">
-            <FaPrayingHands
-              size={26}
-              className="cursor-pointer hover:scale-110 transition text-gray-700 dark:text-gray-300"
-            />
+        <div className="flex items-center justify-between px-4 py-3 mt-1">
+          <div className="flex items-center gap-6">
+            <button
+              onClick={handleLike}
+              className={`flex items-center gap-1 transition group ${liked ? "text-blue-500" : "text-gray-700 dark:text-gray-300"}`}
+            >
+              <FaPrayingHands
+                size={24}
+                className="cursor-pointer group-hover:scale-110 transition"
+              />
+              <span className="text-sm font-medium">{post.likeCount || 0}</span>
+            </button>
+
+            <button className="flex items-center gap-1 text-gray-700 dark:text-gray-300 group">
+              <BiSolidCommentDetail
+                size={24}
+                className="cursor-pointer group-hover:scale-110 transition"
+              />
+              {/* <span className="text-sm">0</span> */}
+            </button>
           </div>
           <div className="flex flex-row gap-5">
-            <BiSolidCommentDetail
-              size={25}
-              className="cursor-pointer hover:scale-110 transition text-gray-700 dark:text-gray-300"
-            />
+            <button
+              onClick={handleSave}
+              className={`${saved ? "text-yellow-500" : "text-gray-700 dark:text-gray-300"}`}
+            >
+              {/* Bookmark icon equivalent? Using Share for now as per original code had Share? No original had FaShare */}
+              {/* Let's use FaShare for share and maybe add Bookmark if needed. Original code didn't have bookmark in actions div explicitly but had icons imported. */}
+              {/* I'll stick to design. */}
+            </button>
+
             <FaShare
               size={22}
               className="cursor-pointer hover:scale-110 transition text-gray-700 dark:text-gray-300"
@@ -80,27 +262,10 @@ export default function PostCard({ post }) {
           </div>
         </div>
 
-        {/* Likes */}
-        <div className="px-4 text-sm font-medium text-gray-900 dark:text-gray-100">
-          {post.likes.toLocaleString()} praises
-        </div>
-
-        {/* Caption */}
-        <div className="px-4 py-2 text-sm text-gray-800 dark:text-gray-200 leading-relaxed">
-          <span className="font-medium mr-1">{post.username}</span>
-          {post.caption}
-        </div>
-
-        {/* Comments */}
-        <div className="px-4 text-sm text-gray-500 dark:text-gray-400">
-          View all {post.comments} comments
-        </div>
-
         {/* Time */}
         <div className="px-4 py-3 text-xs text-gray-400 uppercase tracking-wide">
-          {new Date(post.createdAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
+          {formatDistanceToNow(new Date(post.createdAt || Date.now()), {
+            addSuffix: true,
           })}
         </div>
       </div>

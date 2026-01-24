@@ -2,22 +2,39 @@ import { X } from "lucide-react";
 import { BsArrowLeftCircleFill, BsArrowRightCircleFill } from "react-icons/bs";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { storiesData } from "../data/storiesData";
-import { isStoryExpired } from "../utils/storyUtils";
+import { useStory } from "../context/StoryContext";
 
 const STORY_DURATION = 5000;
 
 export default function StoriesPage() {
   const { churchId } = useParams();
   const navigate = useNavigate();
+  const { stories: allStories, viewStory } = useStory();
 
-  const church = storiesData.find((c) => String(c.churchId) === churchId);
+  // Filter stories for this specific church/minister
+  const stories = allStories.filter(
+    (s) => s.postedBy?._id?.toString() === churchId,
+  );
 
-  const stories = church.stories.filter((s) => !isStoryExpired(s.postedTime));
+  // If no stories found, go back
+  useEffect(() => {
+    // Only redirect if we are sure we have loaded stories and still found none
+    // For now, let's just handle empty state loosely or it might redirect prematurely before load
+    if (allStories.length > 0 && stories.length === 0) {
+      // navigate(-1);
+    }
+  }, [allStories, stories.length, navigate]);
 
   const [index, setIndex] = useState(0);
   const progressRef = useRef(null);
   const timerRef = useRef(null);
+
+  // Mark view on index change
+  useEffect(() => {
+    if (stories[index]) {
+      viewStory(stories[index]._id);
+    }
+  }, [index, stories]);
 
   const startStory = () => {
     if (!progressRef.current) return;
@@ -36,6 +53,8 @@ export default function StoriesPage() {
   };
 
   useEffect(() => {
+    if (stories.length === 0) return;
+
     if (index >= stories.length) {
       navigate(-1);
       return;
@@ -45,7 +64,24 @@ export default function StoriesPage() {
     startStory();
 
     return () => clearTimeout(timerRef.current);
-  }, [index]);
+  }, [index, stories.length, navigate]);
+
+  if (stories.length === 0) {
+    return (
+      <div className="fixed inset-0 bg-black text-white flex items-center justify-center z-50">
+        <p>Loading stories...</p>
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute top-4 right-4 text-white/80 hover:text-white"
+        >
+          <X size={28} />
+        </button>
+      </div>
+    );
+  }
+
+  const currentStory = stories[index];
+  const church = currentStory.postedBy;
 
   return (
     <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
@@ -78,26 +114,41 @@ export default function StoriesPage() {
           {/* Church Info */}
           <div className="flex items-center gap-3">
             <img
-              src={church.profileThumb}
+              src={church?.profilePic || "https://via.placeholder.com/40"}
               className="w-9 h-9 rounded-full object-cover border border-white/40"
+              alt={church?.fullName}
             />
             <span className="text-white text-sm font-medium">
-              {church.churchName}
+              {church?.fullName || "Church"}
             </span>
           </div>
         </div>
 
-        {/* Story Image */}
-        <div className="relative w-full h-full flex items-center justify-center group">
-          <img
-            src={stories[index]?.image}
-            className="max-h-full max-w-full object-contain"
-          />
+        {/* Story Content */}
+        <div className="relative w-full h-full flex items-center justify-center group bg-gray-900">
+          {currentStory.media?.type === "image" ? (
+            <img
+              src={currentStory.media.url}
+              className="max-h-full max-w-full object-contain"
+              alt="Story"
+            />
+          ) : (
+            <video
+              src={currentStory.media.url}
+              className="max-h-full max-w-full object-contain"
+              autoPlay
+              muted // Muted for autoplay policy, maybe add toggle
+              playsInline
+            />
+          )}
 
           {/* Left Arrow */}
           {index > 0 && (
             <button
-              onClick={() => setIndex((i) => Math.max(i - 1, 0))}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIndex((i) => Math.max(i - 1, 0));
+              }}
               className="absolute left-4 top-1/2 -translate-y-1/2 
                  text-white/70 hover:text-white
                  opacity-0 group-hover:opacity-100
@@ -110,7 +161,10 @@ export default function StoriesPage() {
           {/* Right Arrow */}
           {index < stories.length - 1 && (
             <button
-              onClick={() => setIndex((i) => i + 1)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIndex((i) => i + 1);
+              }}
               className="absolute right-4 top-1/2 -translate-y-1/2 
                  text-white/70 hover:text-white
                  opacity-0 group-hover:opacity-100
@@ -120,13 +174,13 @@ export default function StoriesPage() {
             </button>
           )}
 
-          {/* Tap zones (mobile-friendly) */}
+          {/* Tap zones */}
           <div
-            className="absolute left-0 top-0 w-1/2 h-full"
+            className="absolute left-0 top-0 w-1/3 h-full z-0"
             onClick={() => setIndex((i) => Math.max(i - 1, 0))}
           />
           <div
-            className="absolute right-0 top-0 w-1/2 h-full"
+            className="absolute right-0 top-0 w-2/3 h-full z-0"
             onClick={() => setIndex((i) => i + 1)}
           />
         </div>

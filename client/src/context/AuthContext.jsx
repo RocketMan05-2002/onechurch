@@ -22,7 +22,10 @@ export const AuthProvider = ({ children }) => {
           storedRole === "minister" ? "/ministers/profile/me" : "/users/me";
         const { data } = await api.get(endpoint);
 
-        setUser(data.user || data.minister);
+        const userData = data.user || data.minister;
+        // Ensure role is set on the user object
+        userData.role = storedRole;
+        setUser(userData);
       } catch (error) {
         console.error("Auth check failed", error);
         localStorage.removeItem("role");
@@ -41,7 +44,9 @@ export const AuthProvider = ({ children }) => {
 
     const { data } = await api.post(endpoint, { email, password });
 
-    setUser(data.user || data.minister);
+    const userData = data.user || data.minister;
+    userData.role = isMinister ? "minister" : "user";
+    setUser(userData);
     localStorage.setItem("role", isMinister ? "minister" : "user");
     return data;
   };
@@ -58,7 +63,9 @@ export const AuthProvider = ({ children }) => {
     const endpoint = isMinister ? "/ministers/register" : "/users/register";
     const { data } = await api.post(endpoint, payload);
 
-    setUser(data.user || data.minister);
+    const userData = data.user || data.minister;
+    userData.role = isMinister ? "minister" : "user";
+    setUser(userData);
     localStorage.setItem("role", isMinister ? "minister" : "user");
     return data;
   };

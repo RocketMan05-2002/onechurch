@@ -1,10 +1,12 @@
 import { Search } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSearch } from "../../context/SearchContext";
 
 export default function SearchSidebar() {
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState("churches");
+  const navigate = useNavigate();
 
   const { results, performSearch, loading } = useSearch();
 
@@ -84,6 +86,7 @@ export default function SearchSidebar() {
               results.map((item, i) => (
                 <div
                   key={item._id || i}
+                  onClick={() => navigate(`/profile/${item._id}`)}
                   className="
                     flex items-center gap-3 p-3 rounded-xl
                     hover:bg-gray-100 dark:hover:bg-gray-800

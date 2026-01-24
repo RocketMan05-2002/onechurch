@@ -52,19 +52,26 @@ const ministerSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    prayerStreak: {
+      type: Number,
+      default: 0,
+    },
+    lastAmenDate: {
+      type: Date,
+      default: null,
+    },
     refreshToken: {
       type: String,
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-ministerSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+ministerSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
   this.password = await bcrypt.hash(this.password, 10);
-  next();
 });
 
 ministerSchema.methods.isPasswordCorrect = async function (password) {
@@ -82,7 +89,7 @@ ministerSchema.methods.generateAccessToken = function () {
     process.env.ACCESS_TOKEN_SECRET,
     {
       expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
-    }
+    },
   );
 };
 
@@ -94,7 +101,7 @@ ministerSchema.methods.generateRefreshToken = function () {
     process.env.REFRESH_TOKEN_SECRET,
     {
       expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
-    }
+    },
   );
 };
 

@@ -47,15 +47,18 @@ const userSchema = new mongoose.Schema(
     },
     following: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        refPath: "followingModel",
+        targetId: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          refPath: "following.targetModel",
+        },
+        targetModel: {
+          type: String,
+          required: true,
+          enum: ["User", "Minister"],
+        },
       },
     ],
-    followingModel: {
-      type: String,
-      enum: ["User", "Minister"],
-      default: "Minister",
-    },
     followers: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -65,7 +68,7 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 const UserModel = mongoose.model("User", userSchema);
 

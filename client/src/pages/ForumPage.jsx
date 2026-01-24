@@ -1,19 +1,19 @@
 // src/pages/ForumPage.jsx
 import TweetComposer from "../components/forum/TweetComposer";
 import ForumFeed from "../components/forum/ForumFeed";
-import useForum from "../hooks/useForum";
 import LeftSidebar from "../components/LeftSidebar";
 import ForumRightSidebar from "../components/forum/ForumRightSidebar";
 import { useAuth } from "../context/AuthContext";
+import { useForumContext } from "../context/ForumContext";
 
 export default function ForumPage() {
-  const { tweets, postTweet, upvoteTweet, downvoteTweet } = useForum();
+  const { tweets, postTweet, likeTweet, loading } = useForumContext();
   const { user } = useAuth(); // for passing user to composer if needed
 
   return (
     <div className="min-h-screen flex bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       {/* Left Sidebar */}
-      <div className="w-60 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 h-screen sticky top-0">
+      <div className="w-60 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 h-screen sticky top-0 hidden md:block">
         <LeftSidebar />
       </div>
 
@@ -30,11 +30,11 @@ export default function ForumPage() {
         </div>
 
         {/* Feed */}
-        <ForumFeed
-          tweets={tweets}
-          onUpvote={upvoteTweet}
-          onDownvote={downvoteTweet}
-        />
+        {loading ? (
+          <div className="p-10 text-center">Loading tweets...</div>
+        ) : (
+          <ForumFeed tweets={tweets} onLike={likeTweet} />
+        )}
       </div>
 
       {/* Right Sidebar (Forum Specific) */}

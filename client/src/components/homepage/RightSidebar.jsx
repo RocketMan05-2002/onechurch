@@ -2,15 +2,33 @@ import { useEffect, useState } from "react";
 import api from "../../api/axios";
 import { devotionalsData } from "../../data/devotionalsData";
 import { CheckCircle2, Quote, Sparkles } from "lucide-react";
+import { useSocial } from "../../context/SocialContext";
+import { useNavigate } from "react-router-dom";
 
 export default function RightSidebar() {
   const [devotional, setDevotional] = useState(null);
   const [amenClicked, setAmenClicked] = useState(false);
+  const [recommended, setRecommended] = useState([]);
+  const { followUser } = useSocial();
+  const navigate = useNavigate();
 
   // Pick random devotional ONCE
   useEffect(() => {
     const randomIndex = Math.floor(Math.random() * devotionalsData.length);
     setDevotional(devotionalsData[randomIndex]);
+  }, []);
+
+  // Fetch recommended ministers
+  useEffect(() => {
+    const fetchRecommended = async () => {
+      try {
+        const { data } = await api.get("/ministers/recommended");
+        setRecommended(data.ministers || []);
+      } catch (error) {
+        console.error("Failed to fetch recommended", error);
+      }
+    };
+    fetchRecommended();
   }, []);
 
   const handleAmen = async () => {
@@ -22,6 +40,15 @@ export default function RightSidebar() {
     }
   };
 
+  const handleFollow = async (id) => {
+    const success = await followUser(id, "Minister");
+    if (success) {
+      // Remove from list or show followed status?
+      // For simplicity, just filter out.
+      setRecommended((prev) => prev.filter((m) => m._id !== id));
+    }
+  };
+
   if (!devotional) return null;
 
   return (
@@ -30,73 +57,71 @@ export default function RightSidebar() {
       <div className="flex flex-col gap-5 mb-8">
         <div className="flex justify-between items-center px-1">
           <h2 className="text-[11px] font-black uppercase tracking-[0.15em] text-gray-400 dark:text-gray-500">
-            Churches for you
+            Ministers for you
           </h2>
-          <button className="text-[11px] font-bold text-green-600 hover:text-green-500 transition-colors uppercase tracking-wider">
+          <button
+            onClick={() => navigate("/search")}
+            className="text-[11px] font-bold text-green-600 hover:text-green-500 transition-colors uppercase tracking-wider"
+          >
             Explore
           </button>
         </div>
 
         <div className="flex flex-col gap-4">
-          {[
-            {
-              name: "Grace Community",
-              loc: "St. John's",
-              img: "/logo1.jpg",
-              verified: true,
-            },
-            {
-              name: "Faith Assembly",
-              loc: "Nairobi",
-              img: "/logo2.jpg",
-              verified: false,
-            },
-            {
-              name: "The Ark",
-              loc: "London",
-              img: "/logo3.jpg",
-              verified: true,
-            },
-          ].map((church, idx) => (
-            <div
-              key={idx}
-              className="flex justify-between items-center group cursor-pointer p-2 -m-2 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-all duration-300"
-            >
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-gray-200 to-gray-100 dark:from-gray-800 dark:to-gray-700 group-hover:from-green-400 group-hover:to-emerald-500 transition-all duration-500">
-                    <img
-                      src={church.img}
-                      onError={(e) => {
-                        e.target.src = "/logo2.jpg";
-                      }}
-                      alt=""
-                      className="w-full h-full rounded-full object-cover border-2 border-white dark:border-gray-950"
-                    />
-                  </div>
-                  {church.verified && (
-                    <div className="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-gray-950 rounded-full p-0.5 shadow-sm">
-                      <CheckCircle2
-                        size={13}
-                        className="text-green-500 fill-green-500/10"
+          {recommended.length > 0 ? (
+            recommended.map((church, idx) => (
+              <div
+                key={church._id || idx}
+                onClick={() => navigate(`/profile/${church._id}`)}
+                className="flex justify-between items-center group cursor-pointer p-2 -m-2 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-all duration-300"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-gray-200 to-gray-100 dark:from-gray-800 dark:to-gray-700 group-hover:from-green-400 group-hover:to-emerald-500 transition-all duration-500">
+                      <img
+                        src={church.profilePic || "/logo2.jpg"}
+                        onError={(e) => {
+                          e.target.src = "/logo2.jpg";
+                        }}
+                        alt=""
+                        className="w-full h-full rounded-full object-cover border-2 border-white dark:border-gray-950"
                       />
                     </div>
-                  )}
+                    {/* Assuming verification logic exists or hardcode check */}
+                    {church.isVerified && (
+                      <div className="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-gray-950 rounded-full p-0.5 shadow-sm">
+                        <CheckCircle2
+                          size={13}
+                          className="text-green-500 fill-green-500/10"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                      {church.fullName}
+                    </span>
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">
+                      {church.location || "Global"}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                    {church.name}
-                  </span>
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">
-                    {church.loc}
-                  </span>
-                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleFollow(church._id);
+                  }}
+                  className="text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full border border-gray-200 dark:border-gray-800 hover:border-green-500 hover:bg-green-500 hover:text-white dark:hover:bg-green-500 dark:hover:border-green-500 transition-all duration-300 active:scale-90"
+                >
+                  Follow
+                </button>
               </div>
-              <button className="text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full border border-gray-200 dark:border-gray-800 hover:border-green-500 hover:bg-green-500 hover:text-white dark:hover:bg-green-500 dark:hover:border-green-500 transition-all duration-300 active:scale-90">
-                Follow
-              </button>
+            ))
+          ) : (
+            <div className="text-xs text-gray-400 text-center">
+              No recommendations yet.
             </div>
-          ))}
+          )}
         </div>
       </div>
 
@@ -113,9 +138,6 @@ export default function RightSidebar() {
             <p className="text-[14px] leading-relaxed text-gray-800 dark:text-gray-200 font-medium italic">
               "{devotional.verse}"
             </p>
-            {/* <p className="text-[12px] leading-relaxed text-gray-500 dark:text-gray-400 italic">
-              {devotional.prayer}
-            </p> */}
           </div>
 
           <button

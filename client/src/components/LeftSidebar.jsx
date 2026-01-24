@@ -5,42 +5,53 @@ import {
   MessageCircle,
   User,
   Menu,
+  X,
 } from "lucide-react";
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import SidebarMenuPopup from "./SidebarMenuPopup";
+import CreateContent from "./CreateContent";
+import { useAuth } from "../context/AuthContext";
 
 export default function LeftSidebar() {
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user } = useAuth();
 
   const navigation = [
-    { icon: Home, label: "Home", to: "/" },
-    { icon: Search, label: "Search", to: "/search" },
-    { icon: PlusCircle, label: "Create", to: "#" },
-    { icon: MessageCircle, label: "Forum", to: "/forum" },
-    { icon: User, label: "Profile", to: "/profile" },
+    { label: "Home", to: "/", icon: Home },
+    { label: "Search & Explore", to: "/search", icon: Search },
+    { label: "Forum", to: "/forum", icon: MessageCircle },
+    { label: "Create", to: "#", icon: PlusCircle },
+    {
+      label: "Profile",
+      to: user ? `/profile/${user._id}` : "/profile",
+      icon: User,
+    },
   ];
 
+  const handleCreateClick = () => {
+    // Check role, open modal
+    setCreateModalOpen(true);
+  };
+
   return (
-    <div className="flex flex-col h-full py-4 px-3 gap-6">
+    <div className="flex flex-col h-full py-4 px-3 gap-6 relative">
       {/* Logo */}
       <div className="flex justify-center items-end gap-2 mb-4">
-        {/* <img src="/praise3.png" alt="Logo" className="w-12 h-12 rounded-full" /> */}
-        {/* <div className="text-xl font-semibold tracking-wide">
-          Believer&apos;s Ark
-        </div> */}
         <img src="/logo5.png" alt="" className="w-64 h-28 rounded-full" />
       </div>
 
       {/* Navigation */}
       <div className="flex flex-col gap-1">
         {navigation.map((item, idx) =>
-          item.to === "#" ? (
+          item.label === "Create" ? (
             <button
               key={idx}
+              onClick={handleCreateClick}
               className="flex items-center gap-6 px-4 py-2 w-full
-                         rounded-lg transition
-                         hover:bg-gray-200 dark:hover:bg-gray-700"
+                           rounded-lg transition
+                           hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               <item.icon size={24} />
               <span className="text-sm font-medium">{item.label}</span>
@@ -61,7 +72,7 @@ export default function LeftSidebar() {
               <item.icon size={24} />
               <span className="text-sm">{item.label}</span>
             </NavLink>
-          )
+          ),
         )}
       </div>
 
@@ -79,6 +90,67 @@ export default function LeftSidebar() {
 
         {menuOpen && <SidebarMenuPopup />}
       </div>
+
+      {createModalOpen && (
+        <CreateModal
+          onClose={() => setCreateModalOpen(false)}
+          userRole={user?.role}
+        />
+      )}
+    </div>
+  );
+}
+
+function CreateModal({ onClose, userRole }) {
+  const [contentType, setContentType] = useState(null);
+
+  if (contentType) {
+    return <CreateContent onClose={onClose} initialType={contentType} />;
+  }
+
+  const isMinister = userRole === "minister";
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-sm p-6 relative shadow-2xl">
+        <button onClick={onClose} className="absolute top-4 right-4">
+          <X size={24} />
+        </button>
+        <h2 className="text-xl font-bold mb-6 text-center">Create</h2>
+
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={() => setContentType("tweet")}
+            className="p-4 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition font-semibold text-center w-full"
+          >
+            Create Tweet
+          </button>
+
+          {isMinister && (
+            <>
+              <button
+                onClick={() => setContentType("post")}
+                className="p-4 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition font-semibold text-center w-full"
+              >
+                Create Post
+              </button>
+              <Link
+                to="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  alert("Story creation coming soon!");
+                  onClose();
+                }}
+                className="p-4 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition font-semibold text-center"
+              >
+                Add to Story
+              </Link>
+            </>
+          )}
+        </div>
+      </div>
+      {/* Backdrop click to close */}
+      <div className="absolute inset-0 -z-10" onClick={onClose} />
     </div>
   );
 }

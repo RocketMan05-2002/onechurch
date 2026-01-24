@@ -1,12 +1,7 @@
+import { useForumContext } from "../../context/ForumContext";
+
 export default function ForumRightSidebar() {
-  const trending = [
-    "#Faith",
-    "#Prayer",
-    "#BibleVerse",
-    "#ChurchLife",
-    "#Praise",
-    "#ChristianMusic",
-  ];
+  const { trending } = useForumContext();
 
   const topics = [
     "Devotionals",
@@ -23,19 +18,27 @@ export default function ForumRightSidebar() {
         <h2 className="font-bold text-lg mb-4 text-gray-900 dark:text-gray-100">
           Thinking about these?
         </h2>
-        <ul className="flex flex-col gap-3">
-          {trending.map((tag) => (
-            <li
-              key={tag}
-              className="text-gray-600 dark:text-gray-400 cursor-pointer hover:text-blue-500 hover:bg-gray-200 dark:hover:bg-gray-700 px-2 py-1 rounded transition"
-            >
-              <span className="font-medium text-gray-800 dark:text-gray-200">
-                {tag}
-              </span>
-              <div className="text-xs text-gray-500">2.5k posts</div>
-            </li>
-          ))}
-        </ul>
+        {trending && trending.length > 0 ? (
+          <ul className="flex flex-col gap-3">
+            {trending.map((item) => (
+              <li
+                key={item.tag}
+                className="text-gray-600 dark:text-gray-400 cursor-pointer hover:text-blue-500 hover:bg-gray-200 dark:hover:bg-gray-700 px-2 py-1 rounded transition"
+              >
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-medium text-gray-800 dark:text-gray-200">
+                    {item.tag}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {item.count} posts
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="text-sm text-gray-500">No trending topics yet.</div>
+        )}
       </div>
 
       {/* Topics */}

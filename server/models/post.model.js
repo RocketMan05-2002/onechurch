@@ -4,12 +4,12 @@ const postSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: false, // Optional - posts can have no title
       trim: true,
-      maxlength: [300, "Title cannot exceed 300 characters"],
     },
     body: {
       type: String,
+      required: true,
       trim: true,
       maxlength: [5000, "Post body cannot exceed 5000 characters"],
     },
@@ -78,7 +78,7 @@ const postSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const PostModel = mongoose.model("Post", postSchema);

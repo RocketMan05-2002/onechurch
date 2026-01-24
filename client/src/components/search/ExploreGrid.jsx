@@ -1,30 +1,25 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
 import { Heart, MessageCircle } from "lucide-react";
-import { postsData } from "../../data/postsData.js";
 
 export default function ExploreGrid({ onPostClick }) {
   const [loading, setLoading] = useState(true);
-  const [posts, setPosts] = useState([]);
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchExplore = async () => {
       try {
-        const { data } = await api.get("/posts?limit=20");
-        setPosts(data?.posts?.length ? data.posts : []);
+        const { data } = await api.get("/explore");
+        setItems(data?.feed || []);
       } catch (error) {
-        console.error("Failed to fetch explore posts", error);
-        setPosts([]);
+        console.error("Failed to fetch explore feed", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPosts();
+    fetchExplore();
   }, []);
-
-  /** 🔑 Unified source of truth */
-  const displayPosts = posts.length > 0 ? posts : postsData;
 
   return (
     <div
@@ -38,24 +33,31 @@ export default function ExploreGrid({ onPostClick }) {
     >
       {loading ? (
         [...Array(12)].map((_, i) => <SkeletonCard key={i} />)
-      ) : displayPosts.length === 0 ? (
+      ) : items.length === 0 ? (
         <div className="col-span-full text-center py-10 text-gray-500">
           No exploration posts found.
         </div>
       ) : (
-        displayPosts.map((post) => {
-          /** ✅ SUPPORT BOTH DATA SHAPES */
-          const imageUrl = post.media?.[0]?.url || post.image;
+        items.map((item) => {
+          // Determine image source based on type
+          let imageUrl = null;
+          if (item.type === "post") {
+            imageUrl = item.media?.[0]?.url;
+          } else if (item.type === "tweet") {
+            imageUrl = item.media?.[0]?.url; // Tweets might have media
+          }
 
+          // If no image, maybe show a text card?
+          // For now, let's filter out text-only items for the grid to keep it visual
           if (!imageUrl) return null;
 
-          const likes = post.likeCount ?? post.likes ?? 0;
-          const comments = post.comments ?? 0;
+          const likes = item.likes?.length || 0;
+          const comments = item.comments?.length || 0; // Assuming comments array exists or populate logic
 
           return (
             <div
-              key={post._id || post.id}
-              onClick={() => onPostClick?.(post)}
+              key={item._id}
+              onClick={() => onPostClick?.(item)}
               className="
                 relative cursor-pointer overflow-hidden
                 rounded-xl bg-white dark:bg-gray-900
@@ -106,8 +108,6 @@ export default function ExploreGrid({ onPostClick }) {
     </div>
   );
 }
-
-/* ---------------- Skeleton ---------------- */
 
 function SkeletonCard() {
   return (

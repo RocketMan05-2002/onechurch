@@ -12,6 +12,7 @@
 - `GET /api/ministers`: Search and filter ministers by name, role, or location.
 - `GET /api/ministers/:id`: Get detailed profile of a specific minister.
 - `PUT /api/ministers/profile`: Update minister profile details.
+- `GET /api/ministers/recommended`: Get list of recommended ministers/churches.
 
 ## Posts (Minister Exclusive Creation)
 
@@ -43,3 +44,31 @@
 ## Devotionals
 
 - `GET /api/devotionals/random`: Get a random daily devotional for the sidebar.
+
+## Stories (Minister Only)
+
+- `GET /api/stories`: Get active stories feed.
+- `POST /api/stories`: Create a new story.
+- `POST /api/stories/:id/view`: Mark a story as viewed.
+- `POST /api/stories/:id/react`: React to a story.
+
+## Post Actions
+
+- `POST /api/posts/:id/save`: Save a post to user's collection.
+- `DELETE /api/posts/:id/save`: Remove a post from saved collection.
+- `POST /api/posts/:id/report`: Report a post for violation.
+
+## Trending & Forum
+
+- `GET /api/hashtags/trending`: Get list of trending hashtags.
+
+## Social Graph (Follow System)
+
+- `POST /api/users/:id/follow`: Follow a user or minister.
+- `DELETE /api/users/:id/follow`: Unfollow a user or minister.
+- `GET /api/users/:id/followers`: Get list of followers.
+- `GET /api/users/:id/following`: Get list of following.
+
+## Explore
+
+- `GET /api/explore`: Get explore feed content (posts, tweets, ministers).
