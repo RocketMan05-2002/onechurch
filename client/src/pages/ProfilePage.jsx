@@ -11,7 +11,7 @@ import api from "../api/axios";
 
 export default function ProfilePage() {
   const { id } = useParams(); // Get profile ID from URL
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, loading: authLoading } = useAuth();
   const { followUser, unfollowUser } = useSocial();
 
   const [profileUser, setProfileUser] = useState(null);
@@ -61,7 +61,10 @@ export default function ProfilePage() {
         setLoading(true);
         const targetId = id || currentUser?._id || currentUser?.id;
 
-        if (!targetId) return;
+        if (!targetId || targetId === "undefined") {
+          setLoading(false);
+          return;
+        }
 
         // Fetch user profile if viewing someone else
         if (!isOwnProfile) {

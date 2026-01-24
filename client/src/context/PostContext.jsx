@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import api from "../api/axios";
 import { toast } from "react-hot-toast";
 import { useWebSocket } from "./WebSocketContext";
-import { useAuth, AuthContext } from "./AuthContext"; // Import AuthContext
+import { useAuth } from "./AuthContext"; // Import AuthContext
 
 const PostContext = createContext();
 
@@ -10,7 +10,7 @@ export const PostProvider = ({ children }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const { socket } = useWebSocket();
-  const { user } = useContext(AuthContext); // Import user from AuthContext (need to import AuthContext first)
+  const { user } = useAuth(); // Import user from AuthContext (need to import AuthContext first)
 
   // Fetch all posts
   const getPosts = async () => {

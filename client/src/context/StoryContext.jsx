@@ -1,14 +1,14 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import api from "../api/axios";
 import { toast } from "react-hot-toast";
-import { AuthContext } from "./AuthContext";
+import { useAuth } from "./AuthContext";
 
 const StoryContext = createContext();
 
 export const StoryProvider = ({ children }) => {
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
 
   const getStories = async () => {
     setLoading(true);
