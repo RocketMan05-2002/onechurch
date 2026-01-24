@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { BsArrowLeftCircleFill, BsArrowRightCircleFill } from "react-icons/bs";
+// import { BsArrowLeftCircleFill, BsArrowRightCircleFill } from "react-icons/bs";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useStory } from "../context/StoryContext";
