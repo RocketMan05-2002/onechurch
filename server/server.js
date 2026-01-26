@@ -39,6 +39,7 @@ import tweetRouter from "./routers/tweet.routes.js";
 import searchRouter from "./routers/search.routes.js";
 import storyRouter from "./routers/story.routes.js";
 import exploreRouter from "./routers/explore.routes.js";
+import commentRouter from "./routers/comment.routes.js";
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/ministers", ministerRouter);
@@ -47,6 +48,7 @@ app.use("/api/v1/tweets", tweetRouter);
 app.use("/api/v1/search", searchRouter);
 app.use("/api/v1/stories", storyRouter);
 app.use("/api/v1/explore", exploreRouter);
+app.use("/api/v1/comments", commentRouter);
 
 // Health Check
 app.get("/", (req, res) => {

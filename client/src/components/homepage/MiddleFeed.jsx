@@ -3,10 +3,12 @@ import PostCard from "../PostCard";
 import { usePost } from "../../context/PostContext";
 import { useForumContext } from "../../context/ForumContext";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function MiddleFeed() {
   const { posts, getPosts, loading: postsLoading } = usePost();
   const { trending, trendingLoading } = useForumContext(); // Assuming trendingLoading exists or we strictly use loading
+  const navigate = useNavigate();
 
   // getPosts is called in PostProvider useEffect, but good to ensure or refresh?
   // The PostProvider usually fetches on mount.
@@ -68,7 +70,12 @@ export default function MiddleFeed() {
                    group
                  "
                 >
-                  <div className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                  <div
+                    className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors"
+                    onClick={() => {
+                      navigate(`/forum`);
+                    }}
+                  >
                     {item.tag}
                   </div>
                   <div className="flex justify-between items-center text-[10px] font-semibold uppercase tracking-tight text-gray-500 dark:text-gray-500">

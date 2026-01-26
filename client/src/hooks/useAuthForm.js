@@ -15,6 +15,7 @@ export function useAuthForm() {
 
   const [formData, setFormData] = useState({
     name: "", // Used for Full Name
+    username: "",
     email: "",
     password: "",
     role: "user", // Default role

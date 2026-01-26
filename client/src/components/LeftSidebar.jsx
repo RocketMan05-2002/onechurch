@@ -7,15 +7,17 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { NavLink, Link } from "react-router-dom";
 import SidebarMenuPopup from "./SidebarMenuPopup";
 import CreateContent from "./CreateContent";
 import { useAuth } from "../context/AuthContext";
+import { createPortal } from "react-dom";
 
 export default function LeftSidebar() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef(null);
   const { user } = useAuth();
 
   const navigation = [
@@ -36,10 +38,10 @@ export default function LeftSidebar() {
   };
 
   return (
-    <div className="flex flex-col h-full py-4 px-3 gap-6 relative">
+    <div className="flex flex-col h-full py-4 px-3 gap-6 relative bg-gray-950">
       {/* Logo */}
       <div className="flex justify-center items-end gap-2 mb-4">
-        <img src="/logo5.png" alt="" className="w-64 h-28 rounded-full" />
+        <img src="/logo45.png" alt="" className="w-34 h-20" />
       </div>
 
       {/* Navigation */}
@@ -79,6 +81,7 @@ export default function LeftSidebar() {
       {/* Bottom Menu */}
       <div className="absolute bottom-8">
         <button
+          ref={menuButtonRef}
           onClick={() => setMenuOpen(!menuOpen)}
           className="flex items-center gap-6 px-4 py-2 w-full
                      rounded-lg transition
@@ -88,7 +91,7 @@ export default function LeftSidebar() {
           <span className="text-sm font-medium">More</span>
         </button>
 
-        {menuOpen && <SidebarMenuPopup />}
+        {menuOpen && <SidebarMenuPopup buttonRef={menuButtonRef} />}
       </div>
 
       {createModalOpen && (
@@ -110,9 +113,9 @@ function CreateModal({ onClose, userRole }) {
 
   const isMinister = userRole === "minister";
 
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-sm p-6 relative shadow-2xl">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/50 z-[9999] text-gray-200 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-sm p-6 relative shadow-2xl z-10">
         <button onClick={onClose} className="absolute top-4 right-4">
           <X size={24} />
         </button>
@@ -151,6 +154,7 @@ function CreateModal({ onClose, userRole }) {
       </div>
       {/* Backdrop click to close */}
       <div className="absolute inset-0 -z-10" onClick={onClose} />
-    </div>
+    </div>,
+    document.body,
   );
 }

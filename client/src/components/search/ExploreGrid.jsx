@@ -25,10 +25,8 @@ export default function ExploreGrid({ onPostClick }) {
     <div
       className="
         p-4
-        grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4
+        columns-2 md:columns-3 lg:columns-4
         gap-4
-        auto-rows-min
-        grid-flow-row-dense
       "
     >
       {loading ? (
@@ -66,14 +64,15 @@ export default function ExploreGrid({ onPostClick }) {
                 hover:shadow-xl hover:-translate-y-1
                 active:scale-[0.98]
                 group
-                aspect-[4/5]
+                mb-4
+                break-inside-avoid
               "
             >
               <img
                 src={imageUrl}
                 alt=""
                 className="
-                  w-full h-full
+                  w-full h-auto
                   object-cover
                   transition-transform duration-300
                   group-hover:scale-[1.05]

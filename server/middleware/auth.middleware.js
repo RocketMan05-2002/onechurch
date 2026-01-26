@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
-import { Minister } from "../models/minister.model.js";
+import Minister from "../models/minister.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 // Verifies JWT for either a User or a Minister document.

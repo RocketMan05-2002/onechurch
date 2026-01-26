@@ -30,6 +30,12 @@ export default function TweetComposer({ onPost, user }) {
           rows={2}
         />
 
+        {/* Hashtag Reminder */}
+        <p className="text-xs text-gray-500 dark:text-gray-400 -mt-1">
+          💡 Tip: Add at least one hashtag (e.g., #faith, #prayer) to help
+          others discover your tweet
+        </p>
+
         {/* Image Preview */}
         {image && (
           <div className="relative w-full rounded-2xl overflow-hidden shadow-sm">

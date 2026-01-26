@@ -3,6 +3,7 @@ import { X, Image as ImageIcon, Loader2 } from "lucide-react";
 import { usePost } from "../context/PostContext";
 import { useForumContext } from "../context/ForumContext";
 import { useAuth } from "../context/AuthContext";
+import { createPortal } from "react-dom";
 
 export default function CreateContent({ onClose, initialType = "tweet" }) {
   const { createPost } = usePost();
@@ -64,11 +65,17 @@ export default function CreateContent({ onClose, initialType = "tweet" }) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative shadow-2xl z-[10000]">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative shadow-2xl z-10">
         {/* Header */}
-        <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex items-center justify-between z-20">
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
             Create {contentType === "post" ? "Post" : "Tweet"}
           </h2>
@@ -174,9 +181,7 @@ export default function CreateContent({ onClose, initialType = "tweet" }) {
           </div>
         </form>
       </div>
-
-      {/* Backdrop click to close */}
-      <div className="absolute inset-0 -z-10" onClick={onClose} />
-    </div>
+    </div>,
+    document.body,
   );
 }

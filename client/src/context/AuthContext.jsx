@@ -55,6 +55,7 @@ export const AuthProvider = ({ children }) => {
     const isMinister = role === "minister";
     const payload = {
       fullName: formData.name,
+      username: formData.username,
       email: formData.email,
       password: formData.password,
       role: role,

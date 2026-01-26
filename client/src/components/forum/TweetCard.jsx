@@ -84,11 +84,16 @@ export default function TweetCard({ tweet }) {
   };
 
   const handleShare = async () => {
+    const authorId = tweet.author?._id || tweet.author?.id;
+    const shareLink = `${window.location.origin}/profile/${authorId}`;
     try {
-      const link = await shareTweet(tweet._id);
-      await navigator.clipboard.writeText(link);
-      toast.success("Link copied to clipboard!");
+      await navigator.clipboard.writeText(shareLink);
+      toast.success("Link copied to clipboard!", {
+        duration: 2000,
+        position: "bottom-center",
+      });
     } catch (error) {
+      console.error("Failed to copy:", error);
       toast.error("Failed to share");
     }
   };
@@ -148,6 +153,19 @@ export default function TweetCard({ tweet }) {
 
   return (
     <div className="border-b border-gray-100 dark:border-gray-800 p-4 hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition">
+      {/* Retweet Attribution */}
+      {tweet.isRetweet && tweet.originalTweet && (
+        <div className="flex items-center gap-2 mb-2 text-gray-500 text-sm">
+          <Repeat size={14} />
+          <span>
+            Retweeted from{" "}
+            <span className="font-semibold text-gray-700 dark:text-gray-300">
+              @{tweet.originalTweet.author?.email?.split("@")[0] || "user"}
+            </span>
+          </span>
+        </div>
+      )}
+
       <div className="flex gap-3">
         {/* Avatar - clickable */}
         <div

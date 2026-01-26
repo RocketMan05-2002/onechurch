@@ -1,11 +1,13 @@
 import { EllipsisVertical, Trash2, Edit3, X, Check } from "lucide-react";
 
-import { FaShare, FaPrayingHands } from "react-icons/fa";
+import { FaHeart, FaShare, FaPrayingHands } from "react-icons/fa";
 import { BiSolidCommentDetail } from "react-icons/bi";
 import { usePost } from "../context/PostContext";
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "react-hot-toast";
+import CommentSection from "./CommentSection";
 
 export default function PostCard({ post }) {
   const { likePost, savePost, reportPost, deletePost, editPost } = usePost();
@@ -16,6 +18,8 @@ export default function PostCard({ post }) {
   const [saved, setSaved] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [showCopied, setShowCopied] = useState(false);
   const [editData, setEditData] = useState({
     title: post.title || "",
     body: post.body || "",
@@ -61,6 +65,18 @@ export default function PostCard({ post }) {
       setIsEditing(false);
     }
     setSubmitting(false);
+  };
+
+  const handleShare = async () => {
+    const authorId = post.postedBy?._id || post.postedBy?.id;
+    const shareLink = `${window.location.origin}/profile/${authorId}`;
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      setShowCopied(true);
+      setTimeout(() => setShowCopied(false), 2000);
+    } catch (error) {
+      console.error("Failed to copy:", error);
+    }
   };
 
   return (
@@ -230,35 +246,40 @@ export default function PostCard({ post }) {
               onClick={handleLike}
               className={`flex items-center gap-1 transition group ${liked ? "text-blue-500" : "text-gray-700 dark:text-gray-300"}`}
             >
-              <FaPrayingHands
+              <FaHeart
                 size={24}
                 className="cursor-pointer group-hover:scale-110 transition"
               />
               <span className="text-sm font-medium">{post.likeCount || 0}</span>
             </button>
 
-            <button className="flex items-center gap-1 text-gray-700 dark:text-gray-300 group">
+            <button
+              onClick={() => setShowComments(!showComments)}
+              className="flex items-center gap-1 text-gray-700 dark:text-gray-300 group"
+            >
               <BiSolidCommentDetail
                 size={24}
                 className="cursor-pointer group-hover:scale-110 transition"
               />
-              {/* <span className="text-sm">0</span> */}
             </button>
           </div>
-          <div className="flex flex-row gap-5">
+          <div className="flex flex-row gap-5 relative">
             <button
-              onClick={handleSave}
-              className={`${saved ? "text-yellow-500" : "text-gray-700 dark:text-gray-300"}`}
+              onClick={handleShare}
+              className="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition relative"
             >
-              {/* Bookmark icon equivalent? Using Share for now as per original code had Share? No original had FaShare */}
-              {/* Let's use FaShare for share and maybe add Bookmark if needed. Original code didn't have bookmark in actions div explicitly but had icons imported. */}
-              {/* I'll stick to design. */}
+              <FaShare
+                size={22}
+                className="cursor-pointer hover:scale-110 transition"
+              />
+              {/* Copied Tooltip */}
+              {showCopied && (
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-green-600 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg z-50 whitespace-nowrap animate-fade-in">
+                  Link copied!
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-green-600 rotate-45"></div>
+                </div>
+              )}
             </button>
-
-            <FaShare
-              size={22}
-              className="cursor-pointer hover:scale-110 transition text-gray-700 dark:text-gray-300"
-            />
           </div>
         </div>
 
@@ -268,6 +289,13 @@ export default function PostCard({ post }) {
             addSuffix: true,
           })}
         </div>
+
+        {/* Comments Section */}
+        {showComments && (
+          <div className="px-4 pb-4">
+            <CommentSection contentType="post" contentId={post._id} />
+          </div>
+        )}
       </div>
     </div>
   );

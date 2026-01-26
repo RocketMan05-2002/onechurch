@@ -10,32 +10,39 @@ export default function CreateAccountUI({ auth }) {
 
   const isFormValid =
     formData.name.trim() &&
+    formData.username?.trim() &&
     formData.email.trim() &&
     formData.password.length >= 8;
 
   return (
-    <div className="text-center text-white">
-      <h1 className="text-2xl font-semibold">Create an account</h1>
-
-      <p className="text-sm text-white/70 mt-1">
-        Already have an account?{" "}
-        <button onClick={() => setMode("login")} className="underline">
-          Log in
-        </button>
-      </p>
+    <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-light text-gray-900 dark:text-gray-100">
+          Create Account
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Already have an account?{" "}
+          <button
+            onClick={() => setMode("login")}
+            className="text-green-600 dark:text-green-400 font-medium hover:underline"
+          >
+            Log in
+          </button>
+        </p>
+      </div>
 
       {/* Role Selector */}
-      <div className="flex gap-4 mt-6 justify-center">
+      <div className="flex justify-center gap-2">
         {["user", "minister"].map((r) => (
           <button
             key={r}
             onClick={() => updateField("role", r)}
-            className={`px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all
+            className={`px-8 py-2 text-xs font-medium uppercase tracking-wider rounded-full transition-all
               ${
                 formData.role === r
-                  ? "bg-white text-black border-white shadow-lg scale-105"
-                  : "bg-white/10 text-white/60 border-white/20 hover:bg-white/20"
-              } border
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+              }
             `}
           >
             {r}
@@ -44,51 +51,92 @@ export default function CreateAccountUI({ auth }) {
       </div>
 
       {/* Name */}
-      <div className="mt-8 text-left">
-        <label className="text-sm">What should we call you?</label>
+      <div>
         <input
           type="text"
-          placeholder="Enter your profile name"
-          className="w-full mt-2 px-4 py-3 rounded-xs bg-white/80 text-black outline-none"
+          placeholder="Full name"
+          className="w-full px-4 py-3.5 rounded-lg
+                     bg-transparent
+                     border border-gray-200 dark:border-gray-700
+                     text-gray-900 dark:text-gray-100
+                     placeholder-gray-400 dark:placeholder-gray-500
+                     outline-none
+                     focus:border-green-500 dark:focus:border-green-400
+                     transition-colors"
           value={formData.name}
           onChange={(e) => updateField("name", e.target.value)}
         />
       </div>
 
+      {/* Username */}
+      <div>
+        <input
+          type="text"
+          placeholder="Username"
+          className="w-full px-4 py-3.5 rounded-lg
+                     bg-transparent
+                     border border-gray-200 dark:border-gray-700
+                     text-gray-900 dark:text-gray-100
+                     placeholder-gray-400 dark:placeholder-gray-500
+                     outline-none
+                     focus:border-green-500 dark:focus:border-green-400
+                     transition-colors"
+          value={formData.username || ""}
+          onChange={(e) =>
+            updateField(
+              "username",
+              e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""),
+            )
+          }
+        />
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 ml-1">
+          Lowercase, numbers, and underscores only
+        </p>
+      </div>
+
       {/* Email */}
-      <div className="mt-6 text-left">
-        <label className="text-sm">What's your email?</label>
+      <div>
         <input
           type="email"
-          placeholder="Enter your email address"
-          className="w-full mt-2 px-4 py-3 rounded-xs bg-white/80 text-black outline-none"
+          placeholder="Email address"
+          className="w-full px-4 py-3.5 rounded-lg
+                     bg-transparent
+                     border border-gray-200 dark:border-gray-700
+                     text-gray-900 dark:text-gray-100
+                     placeholder-gray-400 dark:placeholder-gray-500
+                     outline-none
+                     focus:border-green-500 dark:focus:border-green-400
+                     transition-colors"
           value={formData.email}
           onChange={(e) => updateField("email", e.target.value)}
         />
       </div>
 
       {/* Password */}
-      <div className="mt-6 text-left relative">
-        <label className="text-sm">Create a password</label>
-
-        <button
-          type="button"
-          onClick={togglePassword}
-          className="absolute right-4 top-12 text-sm text-gray-600"
-        >
-          {showPassword ? "Hide" : "Show"}
-        </button>
-
+      <div className="relative">
         <input
           type={showPassword ? "text" : "password"}
-          placeholder="Enter your password"
-          className="w-full mt-2 px-4 py-3 rounded-xs bg-white/80 text-black outline-none"
+          placeholder="Password"
+          className="w-full px-4 py-3.5 rounded-lg
+                     bg-transparent
+                     border border-gray-200 dark:border-gray-700
+                     text-gray-900 dark:text-gray-100
+                     placeholder-gray-400 dark:placeholder-gray-500
+                     outline-none
+                     focus:border-green-500 dark:focus:border-green-400
+                     transition-colors"
           value={formData.password}
           onChange={(e) => updateField("password", e.target.value)}
         />
-
-        <p className="text-xs text-white/70 mt-2">
-          Use 8 or more characters with letters, numbers & symbols
+        <button
+          type="button"
+          onClick={togglePassword}
+          className="absolute right-4 top-[35%] -translate-y-1/2 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+        >
+          {showPassword ? "Hide" : "Show"}
+        </button>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 ml-1">
+          Minimum 8 characters
         </p>
       </div>
 
@@ -96,15 +144,15 @@ export default function CreateAccountUI({ auth }) {
       <button
         disabled={!isFormValid}
         onClick={submitSignup}
-        className={`w-full mt-6 py-3 rounded-md transition
+        className={`w-full py-3.5 rounded-lg font-medium transition-colors
           ${
             isFormValid
-              ? "bg-black text-white"
-              : "bg-gray-400 text-white cursor-not-allowed"
+              ? "bg-green-600 text-white hover:bg-green-700"
+              : "bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed"
           }
         `}
       >
-        Create an account
+        Create Account
       </button>
     </div>
   );

@@ -4,6 +4,8 @@ import LeftSidebar from "../components/LeftSidebar";
 import TweetCard from "../components/forum/TweetCard";
 import EditProfileModal from "../components/EditProfileModal";
 import ExplorePostModal from "../components/search/ExplorePostModal";
+import FollowersModal from "../components/FollowersModal";
+import FollowingModal from "../components/FollowingModal";
 import { Grid, MessageSquare, Sparkles, Heart } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocial } from "../context/SocialContext";
@@ -23,6 +25,10 @@ export default function ProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
 
   const isOwnProfile = !id || id === currentUser?._id || id === currentUser?.id;
   const displayUser = isOwnProfile ? currentUser : profileUser;
@@ -108,12 +114,66 @@ export default function ProfilePage() {
         ? "Minister"
         : "User";
 
-    if (isFollowing) {
-      await unfollowUser(displayUser._id);
-      setIsFollowing(false);
-    } else {
-      await followUser(displayUser._id, targetModel);
-      setIsFollowing(true);
+    try {
+      if (isFollowing) {
+        const success = await unfollowUser(displayUser._id);
+        if (success) {
+          setIsFollowing(false);
+          // Update counts optimistically
+          setProfileUser((prev) => ({
+            ...prev,
+            followerCount: Math.max((prev?.followerCount || 0) - 1, 0),
+          }));
+          // Refetch profile and reload current user to update following list
+          const profileRes = await api.get(`/users/${id}/profile`);
+          setProfileUser(profileRes.data.user || profileRes.data.minister);
+
+          // Reload current user to update following list
+          window.location.reload();
+        }
+      } else {
+        const success = await followUser(displayUser._id, targetModel);
+        if (success) {
+          setIsFollowing(true);
+          // Update counts optimistically
+          setProfileUser((prev) => ({
+            ...prev,
+            followerCount: (prev?.followerCount || 0) + 1,
+          }));
+          // Refetch profile and reload current user to update following list
+          const profileRes = await api.get(`/users/${id}/profile`);
+          setProfileUser(profileRes.data.user || profileRes.data.minister);
+
+          // Reload current user to update following list
+          window.location.reload();
+        }
+      }
+    } catch (error) {
+      console.error("Follow/unfollow error:", error);
+    }
+  };
+
+  const handleShowFollowers = async () => {
+    try {
+      const targetId = displayUser?._id;
+      if (!targetId) return;
+      const res = await api.get(`/users/${targetId}/followers`);
+      setFollowers(res.data.followers || []);
+      setShowFollowersModal(true);
+    } catch (error) {
+      console.error("Failed to fetch followers:", error);
+    }
+  };
+
+  const handleShowFollowing = async () => {
+    try {
+      const targetId = displayUser?._id;
+      if (!targetId) return;
+      const res = await api.get(`/users/${targetId}/following`);
+      setFollowing(res.data.following || []);
+      setShowFollowingModal(true);
+    } catch (error) {
+      console.error("Failed to fetch following:", error);
     }
   };
 
@@ -138,7 +198,7 @@ export default function ProfilePage() {
   const showPostsTab = isMinister;
 
   return (
-    <div className="min-h-screen flex bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 w-full">
+    <div className="min-h-screen flex bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 w-full">
       {/* Left Sidebar */}
       <div className="w-60 flex-shrink-0 border-r border-gray-200 dark:border-gray-800 h-screen sticky top-0 hidden md:block">
         <LeftSidebar />
@@ -147,9 +207,52 @@ export default function ProfilePage() {
       {/* Profile Content */}
       <div className="flex-1 overflow-y-auto w-full">
         {/* Cover + Profile Header */}
-        <div className="relative">
-          <div className="w-full h-60 bg-gradient-to-r from-blue-400 to-purple-500">
-            {/* Placeholder Cover */}
+        <div className="relative group/banner">
+          <div className="w-full h-60 bg-gray-800 overflow-hidden relative">
+            {displayUser?.bannerPic ? (
+              <img
+                src={displayUser.bannerPic}
+                className="w-full h-full object-contain"
+                alt="Banner"
+              />
+            ) : null}
+
+            {/* Banner Overlay & Edit Button for Owner */}
+            {isOwnProfile && (
+              <div
+                className="absolute inset-0 bg-black/0 group-hover/banner:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover/banner:opacity-100 cursor-pointer"
+                onClick={() =>
+                  document.getElementById("banner-upload")?.click()
+                }
+              >
+                <span className="bg-black/50 text-white px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-md">
+                  Change Banner
+                </span>
+                <input
+                  id="banner-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      const formData = new FormData();
+                      formData.append("image", file);
+                      // Assuming we have a generic or specific route, defaulting to a shared one or user one
+                      // You might need to add this route to your frontend `api` calls or `user.routes.js`
+                      await api.put("/users/banner-picture", formData, {
+                        headers: { "Content-Type": "multipart/form-data" },
+                      });
+                      window.location.reload();
+                    } catch (err) {
+                      console.error("Banner upload failed", err);
+                      alert("Failed to upload banner");
+                    }
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           <div className="px-8 relative">
@@ -203,6 +306,18 @@ export default function ProfilePage() {
                 >
                   Edit Profile
                 </button>
+              ) : // Hide follow button if current user is minister and profile user is regular user
+              currentUser?.role === "minister" &&
+                displayUser?.role === "user" ? (
+                <button
+                  className={`px-6 py-2 rounded-full font-semibold text-sm transition ${
+                    isFollowing
+                      ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300"
+                      : "bg-gray-950 text-gray-950"
+                  }`}
+                >
+                  {isFollowing ? "-" : "-"}
+                </button>
               ) : (
                 <button
                   onClick={handleFollow}
@@ -246,7 +361,10 @@ export default function ProfilePage() {
                     </span>
                   </div>
                 )}
-                <div className="flex flex-col">
+                <div
+                  onClick={handleShowFollowers}
+                  className="flex flex-col cursor-pointer hover:opacity-80 transition"
+                >
                   <span className="text-gray-900 dark:text-gray-100 font-bold text-lg leading-tight">
                     {displayUser?.followerCount ||
                       displayUser?.followers?.length ||
@@ -256,7 +374,10 @@ export default function ProfilePage() {
                     Followers
                   </span>
                 </div>
-                <div className="flex flex-col">
+                <div
+                  onClick={handleShowFollowing}
+                  className="flex flex-col cursor-pointer hover:opacity-80 transition"
+                >
                   <span className="text-gray-900 dark:text-gray-100 font-bold text-lg leading-tight">
                     {displayUser?.followingCount ||
                       displayUser?.following?.length ||
@@ -336,9 +457,7 @@ export default function ProfilePage() {
           ) : (
             <div
               className={
-                activeTab === "posts"
-                  ? "grid grid-cols-3 gap-1"
-                  : "flex flex-col"
+                activeTab === "posts" ? "columns-3 gap-4 p-4" : "flex flex-col"
               }
             >
               {activeTab === "posts"
@@ -346,17 +465,40 @@ export default function ProfilePage() {
                     <div
                       key={post._id}
                       onClick={() => setSelectedPost(post)}
-                      className="aspect-square bg-gray-100 dark:bg-gray-800 overflow-hidden cursor-pointer hover:opacity-90 transition relative group"
+                      className="
+                        relative cursor-pointer overflow-hidden
+                        rounded-xl bg-gray-100 dark:bg-gray-800
+                        shadow-sm
+                        transition-all duration-300 ease-out
+                        hover:shadow-xl hover:-translate-y-1
+                        active:scale-[0.98]
+                        group
+                        mb-4
+                        break-inside-avoid
+                      "
                     >
                       {post.media && post.media[0] ? (
                         <>
                           <img
                             src={post.media[0].url}
-                            className="w-full h-full object-cover"
+                            className="
+                              w-full h-auto
+                              object-cover
+                              transition-transform duration-300
+                              group-hover:scale-[1.05]
+                            "
                             alt="Post"
                           />
                           {/* Hover overlay */}
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div
+                            className="
+                            absolute inset-0
+                            bg-black/0 group-hover:bg-black/40
+                            transition
+                            flex items-center justify-center
+                            opacity-0 group-hover:opacity-100
+                          "
+                          >
                             <div className="flex items-center gap-4 text-white font-semibold">
                               <div className="flex items-center gap-1">
                                 <Heart size={20} fill="white" />
@@ -368,7 +510,7 @@ export default function ProfilePage() {
                           </div>
                         </>
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400 p-2 text-xs text-center">
+                        <div className="w-full h-full flex items-center justify-center text-gray-400 p-4 text-sm text-center">
                           {post.body || "No Image"}
                         </div>
                       )}
@@ -395,6 +537,22 @@ export default function ProfilePage() {
         <ExplorePostModal
           post={selectedPost}
           onClose={() => setSelectedPost(null)}
+        />
+      )}
+
+      {/* Followers Modal */}
+      {showFollowersModal && (
+        <FollowersModal
+          followers={followers}
+          onClose={() => setShowFollowersModal(false)}
+        />
+      )}
+
+      {/* Following Modal */}
+      {showFollowingModal && (
+        <FollowingModal
+          following={following}
+          onClose={() => setShowFollowingModal(false)}
         />
       )}
     </div>

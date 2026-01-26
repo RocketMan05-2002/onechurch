@@ -9,17 +9,27 @@ const commentSchema = new mongoose.Schema(
       minlength: [1, "Comment cannot be empty"],
       maxlength: [1000, "Comment cannot exceed 1000 characters"],
     },
-    post: {
+    contentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Post",
       required: true,
+      index: true,
+    },
+    contentType: {
+      type: String,
+      required: true,
+      enum: ["post", "tweet"],
       index: true,
     },
     commentedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      refPath: "commenterModel",
       required: true,
       index: true,
+    },
+    commenterModel: {
+      type: String,
+      required: true,
+      enum: ["User", "Minister"],
     },
     parentComment: {
       type: mongoose.Schema.Types.ObjectId,
@@ -44,7 +54,7 @@ const commentSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const CommentModel = mongoose.model("Comment", commentSchema);

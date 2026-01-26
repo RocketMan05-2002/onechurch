@@ -9,6 +9,7 @@ import { SearchProvider } from "./context/SearchContext.jsx";
 import { StoryProvider } from "./context/StoryContext.jsx";
 import { SocialProvider } from "./context/SocialContext.jsx";
 import { PostProvider } from "./context/PostContext.jsx";
+import { CommentProvider } from "./context/CommentContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -19,7 +20,9 @@ createRoot(document.getElementById("root")).render(
             <PostProvider>
               <ForumProvider>
                 <SearchProvider>
-                  <App />
+                  <CommentProvider>
+                    <App />
+                  </CommentProvider>
                 </SearchProvider>
               </ForumProvider>
             </PostProvider>

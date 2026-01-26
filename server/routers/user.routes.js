@@ -7,6 +7,7 @@ import {
   getUserProfile,
   updateUserProfile,
   updateProfilePicture,
+  updateProfileBanner,
   recordAmen,
   followUser,
   unfollowUser,
@@ -32,6 +33,12 @@ router.put(
   verifyJwt,
   upload.single("image"),
   updateProfilePicture,
+);
+router.put(
+  "/banner-picture",
+  verifyJwt,
+  upload.single("image"),
+  updateProfileBanner,
 );
 
 router.post("/:id/follow", verifyJwt, followUser);

@@ -2,27 +2,33 @@ export default function LoginUI({ auth }) {
   const { updateField, submitLogin, setMode } = auth;
 
   return (
-    <div className="text-center text-white">
-      <h1 className="text-2xl font-semibold">Log in</h1>
-
-      <p className="text-sm text-white/70 mt-1">
-        Don’t have an account?{" "}
-        <button onClick={() => setMode("signup")} className="underline">
-          Create one
-        </button>
-      </p>
+    <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-light text-gray-900 dark:text-gray-100">
+          Welcome Back
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Don't have an account?{" "}
+          <button
+            onClick={() => setMode("signup")}
+            className="text-green-600 dark:text-green-400 font-medium hover:underline"
+          >
+            Create one
+          </button>
+        </p>
+      </div>
 
       {/* Role Selector */}
-      <div className="mt-8 flex justify-center gap-2">
+      <div className="flex justify-center gap-2">
         {["user", "minister"].map((role) => (
           <button
             key={role}
             onClick={() => updateField("role", role)}
-            className={`px-5 py-2 text-xs font-bold uppercase tracking-widest rounded-full transition-all
+            className={`px-8 py-2 text-xs font-medium uppercase tracking-wider rounded-full transition-all
               ${
                 auth.formData.role === role
-                  ? "bg-white text-black shadow-lg"
-                  : "bg-white/10 text-white/60 hover:bg-white/20"
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
               }
             `}
           >
@@ -32,31 +38,46 @@ export default function LoginUI({ auth }) {
       </div>
 
       {/* Email */}
-      <input
-        type="email"
-        placeholder="Email"
-        className="w-full mt-8 px-4 py-3 rounded-md
-                   bg-white/80 text-black outline-none
-                   focus:ring-2 focus:ring-black/40"
-        onChange={(e) => updateField("email", e.target.value)}
-      />
+      <div>
+        <input
+          type="email"
+          placeholder="Email address"
+          className="w-full px-4 py-3.5 rounded-lg
+                     bg-transparent
+                     border border-gray-200 dark:border-gray-700
+                     text-gray-900 dark:text-gray-100
+                     placeholder-gray-400 dark:placeholder-gray-500
+                     outline-none
+                     focus:border-green-500 dark:focus:border-green-400
+                     transition-colors"
+          onChange={(e) => updateField("email", e.target.value)}
+        />
+      </div>
 
       {/* Password */}
-      <input
-        type="password"
-        placeholder="Password"
-        className="w-full mt-4 px-4 py-3 rounded-md
-                   bg-white/80 text-black outline-none
-                   focus:ring-2 focus:ring-black/40"
-        onChange={(e) => updateField("password", e.target.value)}
-      />
+      <div>
+        <input
+          type="password"
+          placeholder="Password"
+          className="w-full px-4 py-3.5 rounded-lg
+                     bg-transparent
+                     border border-gray-200 dark:border-gray-700
+                     text-gray-900 dark:text-gray-100
+                     placeholder-gray-400 dark:placeholder-gray-500
+                     outline-none
+                     focus:border-green-500 dark:focus:border-green-400
+                     transition-colors"
+          onChange={(e) => updateField("password", e.target.value)}
+        />
+      </div>
 
       {/* CTA */}
       <button
         onClick={submitLogin}
-        className="w-full mt-6 py-3 rounded-full
-                   bg-black text-white
-                   hover:opacity-90 transition"
+        className="w-full py-3.5 rounded-lg
+                   bg-green-600 text-white font-medium
+                   hover:bg-green-700
+                   transition-colors"
       >
         Log in
       </button>

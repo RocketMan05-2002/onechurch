@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import PostModel from "../models/post.model.js";
 import { Tweet } from "../models/tweet.model.js";
-import { Minister } from "../models/minister.model.js";
+import Minister from "../models/minister.model.js";
 
 export const getExploreFeed = asyncHandler(async (req, res) => {
   // Simple algorithm: Fetch recent posts and tweets, and mix them.

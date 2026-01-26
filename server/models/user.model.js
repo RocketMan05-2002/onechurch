@@ -10,6 +10,19 @@ const userSchema = new mongoose.Schema(
       trim: true,
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email"],
     },
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
+      minlength: [3, "Username must be at least 3 characters"],
+      maxlength: [30, "Username cannot exceed 30 characters"],
+      match: [
+        /^[a-z0-9_]+$/,
+        "Username can only contain lowercase letters, numbers, and underscores",
+      ],
+    },
     fullName: {
       type: String,
       required: true,
@@ -29,6 +42,10 @@ const userSchema = new mongoose.Schema(
       },
     ],
     profilePic: {
+      type: String,
+      default: "",
+    },
+    bannerPic: {
       type: String,
       default: "",
     },
@@ -65,6 +82,14 @@ const userSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    followerCount: {
+      type: Number,
+      default: 0,
+    },
+    followingCount: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

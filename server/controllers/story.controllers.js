@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import StoryModel from "../models/story.model.js";
-import { Minister } from "../models/minister.model.js";
+import Minister from "../models/minister.model.js";
 
 export const createStory = asyncHandler(async (req, res) => {
   // Only ministers can create stories

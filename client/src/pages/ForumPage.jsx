@@ -11,7 +11,7 @@ export default function ForumPage() {
   const { user } = useAuth(); // for passing user to composer if needed
 
   return (
-    <div className="min-h-screen flex bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div className="min-h-screen flex bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
       {/* Left Sidebar */}
       <div className="w-60 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 h-screen sticky top-0 hidden md:block">
         <LeftSidebar />
@@ -37,10 +37,10 @@ export default function ForumPage() {
         )}
       </div>
 
-      {/* Right Sidebar (Forum Specific) */}
+      {/* Right Sidebar (Forum Specific)
       <div className="hidden lg:block w-80 pl-8 pr-4 py-4 h-screen sticky top-0 overflow-y-auto">
         <ForumRightSidebar />
-      </div>
+      </div> */}
     </div>
   );
 }

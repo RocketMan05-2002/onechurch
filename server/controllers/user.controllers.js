@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import User from "../models/user.model.js";
-import { Minister } from "../models/minister.model.js";
+import Minister from "../models/minister.model.js";
 import { uploadToCloudinary } from "../utils/uploadHelper.js";
 
 const buildSafeUser = (user) => ({
@@ -23,15 +23,27 @@ const signAccessToken = (user) =>
   );
 
 export const registerUser = asyncHandler(async (req, res) => {
-  const { fullName, email, password, profilePic, role } = req.body;
+  const { fullName, email, password, username, profilePic, role } = req.body;
 
-  if (!fullName || !email || !password) {
-    throw new ApiError(400, "Full name, email, and password are required");
+  if (!fullName || !email || !password || !username) {
+    throw new ApiError(
+      400,
+      "Full name, email, username, and password are required",
+    );
   }
 
-  const existingUser = await User.findOne({ email: email.toLowerCase() });
-  if (existingUser) {
+  // Check if email already exists
+  const existingEmail = await User.findOne({ email: email.toLowerCase() });
+  if (existingEmail) {
     throw new ApiError(409, "User with this email already exists");
+  }
+
+  // Check if username already exists
+  const existingUsername = await User.findOne({
+    username: username.toLowerCase(),
+  });
+  if (existingUsername) {
+    throw new ApiError(409, "Username is already taken");
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -39,6 +51,7 @@ export const registerUser = asyncHandler(async (req, res) => {
   const user = await User.create({
     fullName,
     email: email.toLowerCase(),
+    username: username.toLowerCase(),
     password: hashedPassword,
     profilePic: profilePic || "",
     role: role || "user",
@@ -66,6 +79,8 @@ export const loginUser = asyncHandler(async (req, res) => {
   if (!isPasswordCorrect) {
     throw new ApiError(401, "Invalid password");
   }
+
+  const accessToken = signAccessToken(user);
 
   const cookieOptions = {
     httpOnly: true,
@@ -98,9 +113,12 @@ export const logoutUser = asyncHandler(async (_req, res) => {
 });
 
 export const recordAmen = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user?._id);
+  let user = await User.findById(req.user?._id);
   if (!user) {
-    throw new ApiError(404, "User not found");
+    user = await Minister.findById(req.user?._id);
+  }
+  if (!user) {
+    throw new ApiError(404, "User/Minister not found");
   }
 
   const today = new Date();
@@ -201,8 +219,44 @@ export const updateProfilePicture = asyncHandler(async (req, res) => {
   });
 });
 
+export const updateProfileBanner = asyncHandler(async (req, res) => {
+  const imageFile = req.file;
+
+  if (!imageFile) {
+    throw new ApiError(400, "Banner file is required");
+  }
+
+  // Upload to Cloudinary
+  const imageUrl = await uploadToCloudinary(
+    imageFile.buffer,
+    "onechurch/banners",
+  );
+
+  // Determine if User or Minister
+  let user = await User.findById(req.user?._id);
+  if (user) {
+    user.bannerPic = imageUrl;
+    await user.save();
+  } else {
+    user = await Minister.findById(req.user?._id);
+    if (user) {
+      user.bannerPic = imageUrl;
+      await user.save();
+    } else {
+      throw new ApiError(404, "User not found");
+    }
+  }
+
+  // Reload to exclude password if needed or just return fields
+  return res.status(200).json({
+    user: buildSafeUser(user), // Ensure this helper works for both or maps correctly
+    bannerPic: imageUrl,
+    message: "Profile banner updated successfully",
+  });
+});
+
 export const followUser = asyncHandler(async (req, res) => {
-  const { id } = req.params; // Target ID
+  const { id } = req.params; // Target user/minister ID
   const { targetModel } = req.body; // 'User' or 'Minister'
   const followerId = req.user._id;
 
@@ -210,11 +264,21 @@ export const followUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid or missing targetModel");
   }
 
-  // 1. Add to Current User's 'following' list
-  const currentUser = await User.findById(followerId);
+  // 1. Get current user (could be User or Minister)
+  let currentUser = await User.findById(followerId);
+  let isMinister = false;
+
+  if (!currentUser) {
+    currentUser = await Minister.findById(followerId);
+    isMinister = true;
+  }
+
+  if (!currentUser) {
+    throw new ApiError(404, "Current user not found");
+  }
 
   // Check if already following
-  const isAlreadyFollowing = currentUser.following.some(
+  const isAlreadyFollowing = currentUser.following?.some(
     (f) => f.targetId.toString() === id.toString(),
   );
 
@@ -223,7 +287,9 @@ export const followUser = asyncHandler(async (req, res) => {
   }
 
   // Add to following
+  if (!currentUser.following) currentUser.following = [];
   currentUser.following.push({ targetId: id, targetModel });
+  currentUser.followingCount = (currentUser.followingCount || 0) + 1;
   await currentUser.save();
 
   // 2. Add to Target's 'followers' list
@@ -234,7 +300,8 @@ export const followUser = asyncHandler(async (req, res) => {
     });
   } else {
     await User.findByIdAndUpdate(id, {
-      $push: { followers: followerId }, // Assuming User model has simple followers array of User IDs
+      $push: { followers: followerId },
+      $inc: { followerCount: 1 },
     });
   }
 
@@ -262,6 +329,10 @@ export const unfollowUser = asyncHandler(async (req, res) => {
   currentUser.following = currentUser.following.filter(
     (f) => f.targetId.toString() !== id.toString(),
   );
+  currentUser.followingCount = Math.max(
+    (currentUser.followingCount || 0) - 1,
+    0,
+  );
   await currentUser.save();
 
   // Remove from target's followers
@@ -273,6 +344,7 @@ export const unfollowUser = asyncHandler(async (req, res) => {
   } else {
     await User.findByIdAndUpdate(id, {
       $pull: { followers: followerId },
+      $inc: { followerCount: -1 },
     });
   }
 
@@ -283,38 +355,69 @@ export const unfollowUser = asyncHandler(async (req, res) => {
 
 export const getFollowers = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  // This endpoint gets followers of a USER. Minister followers are handled in minister controller usually?
-  // The route is /api/users/:id/followers.
 
-  const user = await User.findById(id).populate(
+  // Try User first
+  let user = await User.findById(id).populate(
     "followers",
-    "fullName profilePic",
+    "fullName profilePic email bio role",
   );
+
+  // If not found, try Minister
+  if (!user) {
+    user = await Minister.findById(id).populate(
+      "followers",
+      "fullName profilePic email bio ministerType",
+    );
+  }
+
   if (!user) {
     throw new ApiError(404, "User not found");
   }
 
-  return res.status(200).json({ followers: user.followers });
+  return res.status(200).json({ followers: user.followers || [] });
 });
 
 export const getFollowing = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  const user = await User.findById(id).populate(
-    "following.targetId",
-    "fullName profilePic ministerType",
-  );
+  // Try User first
+  let user = await User.findById(id);
+
+  // If not found, try Minister
+  if (!user) {
+    user = await Minister.findById(id);
+  }
+
   if (!user) {
     throw new ApiError(404, "User not found");
   }
 
-  // Map to clean structure
-  const following = user.following.map((f) => ({
-    _id: f.targetId?._id,
-    fullName: f.targetId?.fullName,
-    profilePic: f.targetId?.profilePic,
-    type: f.targetModel,
-  }));
+  // Manually populate following with both User and Minister
+  const following = [];
+  for (const f of user.following || []) {
+    let targetUser;
+    if (f.targetModel === "Minister") {
+      targetUser = await Minister.findById(f.targetId).select(
+        "fullName profilePic email bio ministerType",
+      );
+    } else {
+      targetUser = await User.findById(f.targetId).select(
+        "fullName profilePic email bio role",
+      );
+    }
+
+    if (targetUser) {
+      following.push({
+        _id: targetUser._id,
+        fullName: targetUser.fullName,
+        profilePic: targetUser.profilePic,
+        email: targetUser.email,
+        bio: targetUser.bio,
+        role: targetUser.role || targetUser.ministerType,
+        targetModel: f.targetModel,
+      });
+    }
+  }
 
   return res.status(200).json({ following });
 });

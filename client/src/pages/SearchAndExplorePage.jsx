@@ -8,7 +8,7 @@ export default function SearchAndExplorePage() {
   const [selectedPost, setSelectedPost] = useState(null);
 
   return (
-    <div className="min-h-screen flex bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div className="min-h-screen flex bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
       {/* Left Sidebar */}
       <div className="w-60 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 h-screen sticky top-0">
         <LeftSidebar />

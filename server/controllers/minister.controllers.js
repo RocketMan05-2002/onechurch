@@ -1,4 +1,4 @@
-import { Minister } from "../models/minister.model.js";
+import Minister from "../models/minister.model.js";
 import PostModel from "../models/post.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";

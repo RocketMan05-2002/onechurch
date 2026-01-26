@@ -1,6 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import User from "../models/user.model.js";
-import { Minister } from "../models/minister.model.js";
+import Minister from "../models/minister.model.js";
 
 export const search = asyncHandler(async (req, res) => {
   const { q, type } = req.query; // type: 'users' or 'ministers'

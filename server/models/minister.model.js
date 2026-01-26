@@ -34,6 +34,10 @@ const ministerSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    bannerPic: {
+      type: String,
+      default: "",
+    },
     location: {
       type: String,
       default: "",
@@ -105,4 +109,6 @@ ministerSchema.methods.generateRefreshToken = function () {
   );
 };
 
-export const Minister = mongoose.model("Minister", ministerSchema);
+const Minister = mongoose.model("Minister", ministerSchema);
+
+export default Minister;

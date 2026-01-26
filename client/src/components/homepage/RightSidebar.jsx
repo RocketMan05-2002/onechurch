@@ -3,6 +3,7 @@ import api from "../../api/axios";
 import { devotionalsData } from "../../data/devotionalsData";
 import { CheckCircle2, Quote, Sparkles } from "lucide-react";
 import { useSocial } from "../../context/SocialContext";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function RightSidebar() {
@@ -10,6 +11,7 @@ export default function RightSidebar() {
   const [amenClicked, setAmenClicked] = useState(false);
   const [recommended, setRecommended] = useState([]);
   const { followUser } = useSocial();
+  const { user: currentUser } = useAuth();
   const navigate = useNavigate();
 
   // Pick random devotional ONCE
@@ -23,13 +25,17 @@ export default function RightSidebar() {
     const fetchRecommended = async () => {
       try {
         const { data } = await api.get("/ministers/recommended");
-        setRecommended(data.ministers || []);
+        // Filter out current user if they're a minister
+        const filteredMinisters = (data.ministers || []).filter(
+          (minister) => minister._id !== currentUser?._id,
+        );
+        setRecommended(filteredMinisters);
       } catch (error) {
         console.error("Failed to fetch recommended", error);
       }
     };
     fetchRecommended();
-  }, []);
+  }, [currentUser]);
 
   const handleAmen = async () => {
     setAmenClicked(true);
@@ -52,7 +58,7 @@ export default function RightSidebar() {
   if (!devotional) return null;
 
   return (
-    <div className="p-4 flex flex-col h-[calc(100vh-20px)] bg-white dark:bg-gray-900">
+    <div className="p-4 flex flex-col h-[calc(100vh)] bg-white dark:bg-gray-950">
       {/* Suggestions Section */}
       <div className="flex flex-col gap-5 mb-8">
         <div className="flex justify-between items-center px-1">
