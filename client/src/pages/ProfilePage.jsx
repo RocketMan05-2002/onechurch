@@ -194,7 +194,7 @@ export default function ProfilePage() {
   const showPostsTab = isMinister;
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+    <div className="min-h-screen bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
       {/* Mobile Header */}
       <MobileHeader onMenuClick={() => setShowMobileMenu(true)} />
 
@@ -318,7 +318,7 @@ export default function ProfilePage() {
                     className={`px-6 py-2 rounded-full font-semibold text-sm transition ${
                       isFollowing
                         ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300"
-                        : "bg-gray-950 text-gray-950"
+                        : "bg-gray-900 text-gray-900"
                     }`}
                   >
                     {isFollowing ? "-" : "-"}
@@ -419,7 +419,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-gray-100 dark:border-gray-900 sticky top-0 bg-white/95 dark:bg-black/95 backdrop-blur-xl z-10">
+          <div className="flex border-b border-gray-100 dark:border-gray-900 sticky top-0 bg-white/95 dark:bg-gray-950 backdrop-blur-xl z-10">
             {showPostsTab && (
               <button
                 onClick={() => setActiveTab("posts")}
@@ -445,7 +445,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Content Feed */}
-          <div className="min-h-[300px]">
+          <div className="min-h-[300px] dark:bg-gray-950">
             {loading ? (
               <div className="p-8 text-center text-gray-500">Loading...</div>
             ) : (activeTab === "posts" && posts.length === 0) ||
