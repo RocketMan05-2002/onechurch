@@ -55,7 +55,7 @@ export default function TweetComposer({ onPost, user }) {
 
         {/* Actions */}
         <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-3">
-          <label className="flex items-center gap-2 text-blue-500 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 p-2 rounded-full transition">
+          <label className="flex items-center gap-2 text-accent cursor-pointer hover:bg-accent/10 p-2 rounded-full transition">
             <Image size={20} />
             <input
               type="file"
@@ -68,11 +68,11 @@ export default function TweetComposer({ onPost, user }) {
           <button
             onClick={handlePost}
             className={`
-              bg-blue-500 text-white px-5 py-1.5 rounded-full font-bold transition shadow-sm
+              bg-accent text-gray-950 px-5 py-1.5 rounded-full font-bold transition shadow-sm
               ${
                 !content.trim()
                   ? "opacity-50 cursor-not-allowed"
-                  : "hover:bg-blue-600 active:scale-95"
+                  : "hover:bg-accent-hover active:scale-95"
               }
             `}
             disabled={!content.trim()}

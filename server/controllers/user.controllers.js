@@ -154,7 +154,20 @@ export const recordAmen = asyncHandler(async (req, res) => {
 });
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user?._id).select("-password");
+  // Try User first
+  let user = await User.findById(req.user?._id).select("-password");
+
+  // If not found, try Minister
+  if (!user) {
+    user = await Minister.findById(req.user?._id).select(
+      "-password -refreshToken",
+    );
+  }
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
   return res.status(200).json({ user });
 });
 
@@ -260,62 +273,95 @@ export const followUser = asyncHandler(async (req, res) => {
   const { targetModel } = req.body; // 'User' or 'Minister'
   const followerId = req.user._id;
 
+  console.log("Follow request:", { followerId, targetId: id, targetModel });
+
   if (!targetModel || !["User", "Minister"].includes(targetModel)) {
     throw new ApiError(400, "Invalid or missing targetModel");
   }
 
-  // 1. Get current user (could be User or Minister)
-  let currentUser = await User.findById(followerId);
-  let isMinister = false;
+  try {
+    // 1. Get current user (could be User or Minister)
+    let currentUser = await User.findById(followerId);
+    let isMinisterFollower = false;
 
-  if (!currentUser) {
-    currentUser = await Minister.findById(followerId);
-    isMinister = true;
-  }
+    if (!currentUser) {
+      currentUser = await Minister.findById(followerId);
+      isMinisterFollower = true;
+    }
 
-  if (!currentUser) {
-    throw new ApiError(404, "Current user not found");
-  }
+    if (!currentUser) {
+      throw new ApiError(404, "Current user not found");
+    }
 
-  // Check if already following
-  const isAlreadyFollowing = currentUser.following?.some(
-    (f) => f.targetId.toString() === id.toString(),
-  );
-
-  if (isAlreadyFollowing) {
-    return res.status(400).json({ message: "Already following" });
-  }
-
-  // Add to following
-  if (!currentUser.following) currentUser.following = [];
-  currentUser.following.push({ targetId: id, targetModel });
-  currentUser.followingCount = (currentUser.followingCount || 0) + 1;
-  await currentUser.save();
-
-  // 2. Add to Target's 'followers' list
-  if (targetModel === "Minister") {
-    await Minister.findByIdAndUpdate(id, {
-      $push: { followers: followerId },
-      $inc: { followerCount: 1 },
+    console.log("Current user found:", {
+      id: currentUser._id,
+      isMinister: isMinisterFollower,
+      hasFollowing: !!currentUser.following,
     });
-  } else {
-    await User.findByIdAndUpdate(id, {
-      $push: { followers: followerId },
-      $inc: { followerCount: 1 },
-    });
-  }
 
-  return res
-    .status(200)
-    .json({ success: true, message: "Followed successfully" });
+    // Check if already following
+    const isAlreadyFollowing = currentUser.following?.some(
+      (f) => f.targetId.toString() === id.toString(),
+    );
+
+    if (isAlreadyFollowing) {
+      return res.status(400).json({ message: "Already following" });
+    }
+
+    // Add to following - Use findByIdAndUpdate to avoid validation issues with legacy data
+    console.log("Updating current user following...");
+    const updateQuery = {
+      $push: { following: { targetId: id, targetModel } },
+      $inc: { followingCount: 1 },
+    };
+
+    if (isMinisterFollower) {
+      await Minister.findByIdAndUpdate(followerId, updateQuery);
+    } else {
+      await User.findByIdAndUpdate(followerId, updateQuery);
+    }
+    console.log("Current user updated successfully");
+
+    // 2. Add to Target's 'followers' list
+    console.log("Updating target followers...");
+    if (targetModel === "Minister") {
+      await Minister.findByIdAndUpdate(id, {
+        $push: { followers: followerId },
+        $inc: { followerCount: 1 },
+      });
+    } else {
+      await User.findByIdAndUpdate(id, {
+        $push: { followers: followerId },
+        $inc: { followerCount: 1 },
+      });
+    }
+    console.log("Target updated successfully");
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Followed successfully" });
+  } catch (error) {
+    console.error("Follow error details:", error);
+    throw error;
+  }
 });
 
 export const unfollowUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const followerId = req.user._id;
 
-  const currentUser = await User.findById(followerId);
-  const followingEntry = currentUser.following.find(
+  // 1. Get current user (could be User or Minister)
+  let currentUser = await User.findById(followerId);
+
+  if (!currentUser) {
+    currentUser = await Minister.findById(followerId);
+  }
+
+  if (!currentUser) {
+    throw new ApiError(404, "Current user not found");
+  }
+
+  const followingEntry = currentUser.following?.find(
     (f) => f.targetId.toString() === id.toString(),
   );
 
@@ -357,24 +403,48 @@ export const getFollowers = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   // Try User first
-  let user = await User.findById(id).populate(
-    "followers",
-    "fullName profilePic email bio role",
-  );
+  let user = await User.findById(id);
 
   // If not found, try Minister
   if (!user) {
-    user = await Minister.findById(id).populate(
-      "followers",
-      "fullName profilePic email bio ministerType",
-    );
+    user = await Minister.findById(id);
   }
 
   if (!user) {
     throw new ApiError(404, "User not found");
   }
 
-  return res.status(200).json({ followers: user.followers || [] });
+  // Manually fetch each follower from both User and Minister collections
+  const followers = [];
+
+  for (const followerId of user.followers || []) {
+    // Try to find in User collection first
+    let follower = await User.findById(followerId).select(
+      "fullName profilePic email bio role username",
+    );
+
+    // If not found in User, try Minister collection
+    if (!follower) {
+      follower = await Minister.findById(followerId).select(
+        "fullName profilePic email bio ministerType",
+      );
+    }
+
+    // If found in either collection, add to results
+    if (follower) {
+      followers.push({
+        _id: follower._id,
+        fullName: follower.fullName,
+        profilePic: follower.profilePic,
+        email: follower.email,
+        bio: follower.bio,
+        role: follower.role || follower.ministerType,
+        username: follower.username,
+      });
+    }
+  }
+
+  return res.status(200).json({ followers });
 });
 
 export const getFollowing = asyncHandler(async (req, res) => {

@@ -14,7 +14,7 @@ export default function ForumRightSidebar() {
   return (
     <div className="flex flex-col gap-6">
       {/* Trending */}
-      <div className="bg-gray-100 dark:bg-gray-800 rounded-xl p-4">
+      <div className="bg-gray-100 dark:bg-gray-800 rounded-xl p-4 m-2">
         <h2 className="font-bold text-lg mb-4 text-gray-900 dark:text-gray-100">
           Thinking about these?
         </h2>
@@ -42,7 +42,7 @@ export default function ForumRightSidebar() {
       </div>
 
       {/* Topics */}
-      <div className="bg-gray-100 dark:bg-gray-800 rounded-xl p-4">
+      <div className="bg-gray-100 dark:bg-gray-800 rounded-xl p-4 m-2">
         <h2 className="font-bold text-lg mb-4 text-gray-900 dark:text-gray-100">
           Topics
         </h2>

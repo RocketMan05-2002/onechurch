@@ -159,8 +159,10 @@ export default function TweetCard({ tweet }) {
           <Repeat size={14} />
           <span>
             Retweeted from{" "}
-            <span className="font-semibold text-gray-700 dark:text-gray-300">
-              @{tweet.originalTweet.author?.email?.split("@")[0] || "user"}
+            <span className="font-semibold text-gray-900 dark:text-gray-100">
+              {tweet.retweetedFrom?.fullName ||
+                tweet.retweetedFrom?.username ||
+                "Unknown User"}
             </span>
           </span>
         </div>
@@ -251,7 +253,7 @@ export default function TweetCard({ tweet }) {
                 </button>
                 <button
                   onClick={handleEdit}
-                  className="p-1.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition"
+                  className="p-1.5 bg-accent text-white rounded-full hover:bg-accent-hover transition"
                   disabled={submitting}
                 >
                   <Check size={18} />
@@ -279,9 +281,9 @@ export default function TweetCard({ tweet }) {
           <div className="flex justify-between items-center mt-3 max-w-sm text-gray-500">
             <button
               onClick={() => setShowCommentBox(!showCommentBox)}
-              className="flex items-center gap-2 group hover:text-blue-500 transition-colors"
+              className="flex items-center gap-2 group hover:text-accent transition-colors"
             >
-              <div className="p-2 rounded-full group-hover:bg-blue-500/10 transition">
+              <div className="p-2 rounded-full group-hover:bg-accent/10 transition">
                 <MessageCircle size={18} />
               </div>
               <span className="text-xs">{tweet.comments?.length || 0}</span>
@@ -289,9 +291,9 @@ export default function TweetCard({ tweet }) {
 
             <button
               onClick={handleRetweet}
-              className="flex items-center gap-2 group hover:text-green-500 transition-colors"
+              className="flex items-center gap-2 group hover:text-accent transition-colors"
             >
-              <div className="p-2 rounded-full group-hover:bg-green-500/10 transition">
+              <div className="p-2 rounded-full group-hover:bg-accent/10 transition">
                 <Repeat size={18} />
               </div>
               <span className="text-xs">{tweet.retweets?.length || 0}</span>

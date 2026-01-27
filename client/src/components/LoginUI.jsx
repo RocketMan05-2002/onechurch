@@ -11,7 +11,7 @@ export default function LoginUI({ auth }) {
           Don't have an account?{" "}
           <button
             onClick={() => setMode("signup")}
-            className="text-green-600 dark:text-green-400 font-medium hover:underline"
+            className="text-accent font-medium hover:underline"
           >
             Create one
           </button>
@@ -27,7 +27,7 @@ export default function LoginUI({ auth }) {
             className={`px-8 py-2 text-xs font-medium uppercase tracking-wider rounded-full transition-all
               ${
                 auth.formData.role === role
-                  ? "bg-green-600 text-white"
+                  ? "bg-accent text-gray-950"
                   : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
               }
             `}
@@ -48,7 +48,7 @@ export default function LoginUI({ auth }) {
                      text-gray-900 dark:text-gray-100
                      placeholder-gray-400 dark:placeholder-gray-500
                      outline-none
-                     focus:border-green-500 dark:focus:border-green-400
+                     focus:border-[--color-accent]
                      transition-colors"
           onChange={(e) => updateField("email", e.target.value)}
         />
@@ -65,7 +65,7 @@ export default function LoginUI({ auth }) {
                      text-gray-900 dark:text-gray-100
                      placeholder-gray-400 dark:placeholder-gray-500
                      outline-none
-                     focus:border-green-500 dark:focus:border-green-400
+                     focus:border-[--color-accent]
                      transition-colors"
           onChange={(e) => updateField("password", e.target.value)}
         />
@@ -75,8 +75,8 @@ export default function LoginUI({ auth }) {
       <button
         onClick={submitLogin}
         className="w-full py-3.5 rounded-lg
-                   bg-green-600 text-white font-medium
-                   hover:bg-green-700
+                   bg-accent text-gray-950 font-medium
+                   hover:bg-accent-hover
                    transition-colors"
       >
         Log in

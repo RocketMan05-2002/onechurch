@@ -140,13 +140,13 @@ export default function EditProfileModal({ user, onClose }) {
                 />
                 <label
                   htmlFor="profile-pic-input"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition cursor-pointer text-sm font-semibold"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-gray-950 rounded-lg hover:bg-accent-hover transition cursor-pointer text-sm font-semibold"
                 >
                   <Upload size={16} />
                   Choose Image
                 </label>
                 {profilePicFile && (
-                  <p className="text-xs text-green-600 dark:text-green-400 mt-2">
+                  <p className="text-xs text-accent dark:text-accent mt-2">
                     ✓ Image selected: {profilePicFile.name}
                   </p>
                 )}
@@ -235,7 +235,7 @@ export default function EditProfileModal({ user, onClose }) {
             <button
               type="submit"
               disabled={loading || uploadingPic}
-              className="flex-1 px-4 py-3 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-3 rounded-lg bg-accent text-gray-950 font-semibold hover:bg-accent-hover transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {(loading || uploadingPic) && (
                 <Loader2 size={16} className="animate-spin" />

@@ -52,7 +52,7 @@ export default function SearchSidebar() {
               transition
               ${
                 activeTab === tab
-                  ? "bg-blue-500 text-white"
+                  ? "bg-accent text-gray-950"
                   : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
               }
             `}
@@ -106,7 +106,9 @@ export default function SearchSidebar() {
                       {item.name || item.fullName}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {activeTab === "churches" ? item.address : item.email}
+                      {activeTab === "churches"
+                        ? item.address
+                        : `@${item.username}`}
                     </p>
                   </div>
                 </div>

@@ -24,7 +24,7 @@ export default function CreateAccountUI({ auth }) {
           Already have an account?{" "}
           <button
             onClick={() => setMode("login")}
-            className="text-green-600 dark:text-green-400 font-medium hover:underline"
+            className="text-accent font-medium hover:underline"
           >
             Log in
           </button>
@@ -40,7 +40,7 @@ export default function CreateAccountUI({ auth }) {
             className={`px-8 py-2 text-xs font-medium uppercase tracking-wider rounded-full transition-all
               ${
                 formData.role === r
-                  ? "bg-green-600 text-white"
+                  ? "bg-accent text-gray-950"
                   : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
               }
             `}
@@ -61,7 +61,7 @@ export default function CreateAccountUI({ auth }) {
                      text-gray-900 dark:text-gray-100
                      placeholder-gray-400 dark:placeholder-gray-500
                      outline-none
-                     focus:border-green-500 dark:focus:border-green-400
+                     focus:border-accent
                      transition-colors"
           value={formData.name}
           onChange={(e) => updateField("name", e.target.value)}
@@ -79,7 +79,7 @@ export default function CreateAccountUI({ auth }) {
                      text-gray-900 dark:text-gray-100
                      placeholder-gray-400 dark:placeholder-gray-500
                      outline-none
-                     focus:border-green-500 dark:focus:border-green-400
+                     focus:border-accent
                      transition-colors"
           value={formData.username || ""}
           onChange={(e) =>
@@ -105,7 +105,7 @@ export default function CreateAccountUI({ auth }) {
                      text-gray-900 dark:text-gray-100
                      placeholder-gray-400 dark:placeholder-gray-500
                      outline-none
-                     focus:border-green-500 dark:focus:border-green-400
+                     focus:border-accent
                      transition-colors"
           value={formData.email}
           onChange={(e) => updateField("email", e.target.value)}
@@ -123,7 +123,7 @@ export default function CreateAccountUI({ auth }) {
                      text-gray-900 dark:text-gray-100
                      placeholder-gray-400 dark:placeholder-gray-500
                      outline-none
-                     focus:border-green-500 dark:focus:border-green-400
+                     focus:border-accent
                      transition-colors"
           value={formData.password}
           onChange={(e) => updateField("password", e.target.value)}
@@ -147,7 +147,7 @@ export default function CreateAccountUI({ auth }) {
         className={`w-full py-3.5 rounded-lg font-medium transition-colors
           ${
             isFormValid
-              ? "bg-green-600 text-white hover:bg-green-700"
+              ? "bg-accent text-gray-950 hover:bg-accent-hover"
               : "bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed"
           }
         `}

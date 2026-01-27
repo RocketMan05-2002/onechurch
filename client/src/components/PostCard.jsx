@@ -244,7 +244,7 @@ export default function PostCard({ post }) {
           <div className="flex items-center gap-6">
             <button
               onClick={handleLike}
-              className={`flex items-center gap-1 transition group ${liked ? "text-blue-500" : "text-gray-700 dark:text-gray-300"}`}
+              className={`flex items-center gap-1 transition group ${liked ? "text-red-500" : "text-gray-700 dark:text-gray-300"}`}
             >
               <FaHeart
                 size={24}
@@ -266,7 +266,7 @@ export default function PostCard({ post }) {
           <div className="flex flex-row gap-5 relative">
             <button
               onClick={handleShare}
-              className="text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition relative"
+              className="text-gray-700 dark:text-gray-300 hover:text-accent transition relative"
             >
               <FaShare
                 size={22}
@@ -274,9 +274,9 @@ export default function PostCard({ post }) {
               />
               {/* Copied Tooltip */}
               {showCopied && (
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-green-600 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg z-50 whitespace-nowrap animate-fade-in">
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-accent text-gray-950 text-xs px-3 py-1.5 rounded-lg shadow-lg z-50 whitespace-nowrap animate-fade-in">
                   Link copied!
-                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-green-600 rotate-45"></div>
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-accent rotate-45"></div>
                 </div>
               )}
             </button>

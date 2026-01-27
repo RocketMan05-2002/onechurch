@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import PostModel from "../models/post.model.js";
 import { emitNewPost, emitPostLike } from "../socket/socket.js";
 import { uploadToCloudinary } from "../utils/uploadHelper.js";
-
+import User from "../models/user.model.js";
 export const createPost = asyncHandler(async (req, res) => {
   const { title, body } = req.body;
   const imageFile = req.file; // From multer
@@ -105,8 +105,6 @@ export const toggleLikePost = asyncHandler(async (req, res) => {
 
   return res.status(200).json({ success: true, likeCount: post.likeCount });
 });
-
-import User from "../models/user.model.js";
 
 export const savePost = asyncHandler(async (req, res) => {
   const { id } = req.params;

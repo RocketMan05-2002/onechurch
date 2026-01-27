@@ -79,13 +79,13 @@ export default function CommentSection({ contentType, contentId }) {
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Add a comment..."
-            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-accent"
             disabled={loading}
           />
           <button
             type="submit"
             disabled={loading || !newComment.trim()}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2"
+            className="px-4 py-2 bg-accent text-gray-950 rounded-lg hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2"
           >
             <Send size={16} />
           </button>

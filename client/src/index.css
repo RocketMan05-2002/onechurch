@@ -2,6 +2,18 @@
 @import url("https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap");
 @import "tailwindcss";
 
+@theme {
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-light: var(--accent-light);
+}
+
+:root {
+  --accent: #ffbe64;
+  --accent-hover: #f0a84a;
+  --accent-light: #ffd699;
+}
+
 * {
   font-family: "Ubuntu", sans-serif;
 }

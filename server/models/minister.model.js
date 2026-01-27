@@ -56,6 +56,24 @@ const ministerSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    following: [
+      {
+        targetId: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          refPath: "following.targetModel",
+        },
+        targetModel: {
+          type: String,
+          required: true,
+          enum: ["User", "Minister"],
+        },
+      },
+    ],
+    followingCount: {
+      type: Number,
+      default: 0,
+    },
     prayerStreak: {
       type: Number,
       default: 0,

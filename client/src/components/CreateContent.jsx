@@ -104,7 +104,7 @@ export default function CreateContent({ onClose, initialType = "tweet" }) {
               onClick={() => setContentType("post")}
               className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
                 contentType === "post"
-                  ? "bg-green-600 text-white"
+                  ? "bg-accent text-gray-950"
                   : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
               }`}
             >
@@ -156,7 +156,7 @@ export default function CreateContent({ onClose, initialType = "tweet" }) {
 
           {/* Actions */}
           <div className="flex justify-between items-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">
-            <label className="flex items-center gap-2 text-blue-500 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 p-2 rounded-full transition">
+            <label className="flex items-center gap-2 text-accent cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 p-2 rounded-full transition">
               <ImageIcon size={22} />
               <input
                 type="file"
@@ -171,8 +171,8 @@ export default function CreateContent({ onClose, initialType = "tweet" }) {
               disabled={loading || (!body.trim() && !image)}
               className={`px-6 py-2 rounded-full font-bold text-sm transition-all shadow-md flex items-center gap-2 ${
                 contentType === "post"
-                  ? "bg-green-600 hover:bg-green-500 text-white shadow-green-500/20"
-                  : "bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/20"
+                  ? "bg-accent hover:bg-accent-hover text-gray-950 shadow-green-500/20"
+                  : "bg-accent hover:bg-accent-hover text-gray-950 shadow-blue-500/20"
               } active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {loading && <Loader2 size={16} className="animate-spin" />}

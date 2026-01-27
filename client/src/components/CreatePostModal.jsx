@@ -95,7 +95,7 @@ export default function CreatePostModal({ onClose }) {
             <button
               type="submit"
               disabled={loading || (!body && !imageUrl)}
-              className="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded-full font-bold text-sm transition-all shadow-md shadow-green-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="bg-accent hover:bg-accent-hover text-white px-6 py-2 rounded-full font-bold text-sm transition-all shadow-md shadow-green-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {loading && <Loader2 size={16} className="animate-spin" />}
               Post

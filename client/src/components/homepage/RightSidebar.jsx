@@ -10,7 +10,7 @@ export default function RightSidebar() {
   const [devotional, setDevotional] = useState(null);
   const [amenClicked, setAmenClicked] = useState(false);
   const [recommended, setRecommended] = useState([]);
-  const { followUser } = useSocial();
+  const { followUser, unfollowUser } = useSocial();
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
 
@@ -29,7 +29,17 @@ export default function RightSidebar() {
         const filteredMinisters = (data.ministers || []).filter(
           (minister) => minister._id !== currentUser?._id,
         );
-        setRecommended(filteredMinisters);
+
+        // Mark ministers as followed if they're in the current user's following list
+        const ministersWithFollowState = filteredMinisters.map((minister) => {
+          const isFollowed = currentUser?.following?.some(
+            (f) =>
+              f.targetId === minister._id || f.targetId?._id === minister._id,
+          );
+          return { ...minister, isFollowed: !!isFollowed };
+        });
+
+        setRecommended(ministersWithFollowState);
       } catch (error) {
         console.error("Failed to fetch recommended", error);
       }
@@ -46,12 +56,23 @@ export default function RightSidebar() {
     }
   };
 
-  const handleFollow = async (id) => {
-    const success = await followUser(id, "Minister");
-    if (success) {
-      // Remove from list or show followed status?
-      // For simplicity, just filter out.
-      setRecommended((prev) => prev.filter((m) => m._id !== id));
+  const handleFollow = async (id, isFollowed) => {
+    // Optimistically update UI
+    setRecommended((prev) =>
+      prev.map((m) => (m._id === id ? { ...m, isFollowed: !isFollowed } : m)),
+    );
+
+    try {
+      if (isFollowed) {
+        await unfollowUser(id);
+      } else {
+        await followUser(id, "Minister");
+      }
+    } catch (error) {
+      // Revert if failed
+      setRecommended((prev) =>
+        prev.map((m) => (m._id === id ? { ...m, isFollowed: isFollowed } : m)),
+      );
     }
   };
 
@@ -67,7 +88,7 @@ export default function RightSidebar() {
           </h2>
           <button
             onClick={() => navigate("/search")}
-            className="text-[11px] font-bold text-green-600 hover:text-green-500 transition-colors uppercase tracking-wider"
+            className="text-[11px] font-bold text-accent hover:opacity-80 transition-colors uppercase tracking-wider"
           >
             Explore
           </button>
@@ -83,7 +104,7 @@ export default function RightSidebar() {
               >
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <div className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-gray-200 to-gray-100 dark:from-gray-800 dark:to-gray-700 group-hover:from-green-400 group-hover:to-emerald-500 transition-all duration-500">
+                    <div className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-gray-200 to-gray-100 dark:from-gray-800 dark:to-gray-700 group-hover:from-orange-400 group-hover:to-yellow-500 transition-all duration-500">
                       <img
                         src={church.profilePic || "/logo2.jpg"}
                         onError={(e) => {
@@ -98,13 +119,13 @@ export default function RightSidebar() {
                       <div className="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-gray-950 rounded-full p-0.5 shadow-sm">
                         <CheckCircle2
                           size={13}
-                          className="text-green-500 fill-green-500/10"
+                          className="text-accent fill-accent/10"
                         />
                       </div>
                     )}
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                    <span className="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-accent transition-colors">
                       {church.fullName}
                     </span>
                     <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">
@@ -115,11 +136,19 @@ export default function RightSidebar() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleFollow(church._id);
+                    if (!church.isFollowed) {
+                      handleFollow(church._id, church.isFollowed);
+                    } else {
+                      handleFollow(church._id, church.isFollowed);
+                    }
                   }}
-                  className="text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full border border-gray-200 dark:border-gray-800 hover:border-green-500 hover:bg-green-500 hover:text-white dark:hover:bg-green-500 dark:hover:border-green-500 transition-all duration-300 active:scale-90"
+                  className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full border transition-all duration-300 active:scale-90 ${
+                    church.isFollowed
+                      ? "bg-gray-100 dark:bg-gray-800 text-gray-400 border-transparent hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 hover:border-red-200"
+                      : "border-gray-200 dark:border-gray-800 hover:border-accent hover:bg-accent hover:text-gray-950 dark:hover:bg-accent dark:hover:border-accent"
+                  }`}
                 >
-                  Follow
+                  {church.isFollowed ? "Following" : "Follow"}
                 </button>
               </div>
             ))
@@ -135,7 +164,7 @@ export default function RightSidebar() {
         {/* Daily Bread (Devotional) Section - Minimalistic */}
         <div className="pt-6 border-t border-gray-100 dark:border-gray-900 flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-[10px] font-bold uppercase tracking-widest text-green-500">
+            <h2 className="text-[10px] font-bold uppercase tracking-widest text-accent">
               Daily Bread
             </h2>
           </div>
@@ -152,8 +181,8 @@ export default function RightSidebar() {
               w-full py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200
               ${
                 amenClicked
-                  ? "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800"
-                  : "bg-gray-50 dark:bg-white-900 text-gray-700 dark:text-black border border-gray-100 dark:border-gray-800 hover:bg-green-500 dark:hover:bg-green-500 cursor-pointer"
+                  ? "bg-accent/10 text-accent border border-accent/30"
+                  : "bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-gray-100 dark:border-gray-800 hover:bg-accent hover:text-gray-950 cursor-pointer"
               }
             `}
           >
