@@ -53,6 +53,17 @@ export const createComment = asyncHandler(async (req, res) => {
   // Populate commenter info
   await comment.populate("commentedBy", "fullName profilePic email");
 
+  // Increment comment count on the post
+  if (contentType === "post") {
+    await PostModel.findByIdAndUpdate(contentId, {
+      $inc: { commentCount: 1 },
+    });
+  } else if (contentType === "tweet") {
+    await Tweet.findByIdAndUpdate(contentId, {
+      $inc: { commentCount: 1 },
+    });
+  }
+
   return res.status(201).json({
     success: true,
     comment,
@@ -100,6 +111,17 @@ export const deleteComment = asyncHandler(async (req, res) => {
   }
 
   await CommentModel.findByIdAndDelete(id);
+
+  // Decrement comment count on the post/tweet
+  if (comment.contentType === "post") {
+    await PostModel.findByIdAndUpdate(comment.contentId, {
+      $inc: { commentCount: -1 },
+    });
+  } else if (comment.contentType === "tweet") {
+    await Tweet.findByIdAndUpdate(comment.contentId, {
+      $inc: { commentCount: -1 },
+    });
+  }
 
   return res.status(200).json({
     success: true,

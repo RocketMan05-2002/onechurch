@@ -261,6 +261,9 @@ export default function PostCard({ post }) {
                 size={24}
                 className="cursor-pointer group-hover:scale-110 transition"
               />
+              <span className="text-sm font-medium">
+                {post.commentCount || 0}
+              </span>
             </button>
           </div>
           <div className="flex flex-row gap-5 relative">
