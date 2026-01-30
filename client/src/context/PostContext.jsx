@@ -58,7 +58,8 @@ export const PostProvider = ({ children }) => {
         headers: isFormData ? { "Content-Type": "multipart/form-data" } : {},
       });
 
-      setPosts((prev) => [res.data.post, ...prev]);
+      // Don't add to local state - WebSocket 'new-post' event will handle it
+      // This prevents duplicate posts with same key
       toast.success("Post created!");
       return true;
     } catch (error) {

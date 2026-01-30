@@ -12,6 +12,8 @@ import SidebarMenuPopup from "../components/SidebarMenuPopup";
 import { Grid, MessageSquare, Sparkles, Heart } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocial } from "../context/SocialContext";
+import useProfileCache from "../hooks/useProfileCache";
+import { toast } from "react-hot-toast";
 import api from "../api/axios";
 
 export default function ProfilePage() {
@@ -51,55 +53,98 @@ export default function ProfilePage() {
           ? "/ministers/profile-picture"
           : "/users/profile-picture";
 
-      const response = await api.put(endpoint, formData, {
+      await api.put(endpoint, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // Update currentUser in AuthContext or reload page
+      toast.success("Profile picture updated successfully!");
       window.location.reload();
     } catch (error) {
       console.error("Failed to upload profile picture:", error);
-      alert("Failed to upload profile picture. Please try again.");
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to upload profile picture. Please try again.",
+      );
     } finally {
       setUploadingProfilePic(false);
     }
   };
 
+  // Profile caching
+  const targetId = id || currentUser?._id || currentUser?.id;
+  const { cachedData, setCache, isCacheValid } = useProfileCache(targetId);
+
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        setLoading(true);
         const targetId = id || currentUser?._id || currentUser?.id;
 
         if (!targetId || targetId === "undefined") {
+          return;
+        }
+
+        // Check cache first for non-own profiles
+        if (!isOwnProfile && cachedData && isCacheValid()) {
+          console.log("📦 Using cached profile data");
+          setProfileUser(cachedData.user);
+          setPosts(cachedData.posts || []);
+          setUserTweets(cachedData.tweets || []);
+          setIsFollowing(cachedData.isFollowing || false);
           setLoading(false);
           return;
         }
 
+        setLoading(true);
+
         // Fetch user profile if viewing someone else
         if (!isOwnProfile) {
           const profileRes = await api.get(`/users/${id}/profile`);
-          setProfileUser(profileRes.data.user || profileRes.data.minister);
+          const userData = profileRes.data.user || profileRes.data.minister;
+          setProfileUser(userData);
 
           // Check if following
           const isFollowingUser = currentUser?.following?.some(
             (f) => f.targetId === id || f.targetId?._id === id,
           );
           setIsFollowing(!!isFollowingUser);
+
+          // Fetch posts and tweets in parallel
+          const [postsRes, tweetsRes] = await Promise.all([
+            api
+              .get(`/posts?userId=${targetId}`)
+              .catch(() => ({ data: { posts: [] } })),
+            api
+              .get(`/tweets?userId=${targetId}`)
+              .catch(() => ({ data: { tweets: [] } })),
+          ]);
+
+          const postsData = postsRes.data.posts || [];
+          const tweetsData = tweetsRes.data.tweets || [];
+
+          setPosts(postsData);
+          setUserTweets(tweetsData);
+
+          // Cache the data
+          setCache({
+            user: userData,
+            posts: postsData,
+            tweets: tweetsData,
+            isFollowing: !!isFollowingUser,
+          });
+        } else {
+          // For own profile, just fetch posts and tweets
+          const [postsRes, tweetsRes] = await Promise.all([
+            api
+              .get(`/posts?userId=${targetId}`)
+              .catch(() => ({ data: { posts: [] } })),
+            api
+              .get(`/tweets?userId=${targetId}`)
+              .catch(() => ({ data: { tweets: [] } })),
+          ]);
+
+          setPosts(postsRes.data.posts || []);
+          setUserTweets(tweetsRes.data.tweets || []);
         }
-
-        // Fetch posts and tweets
-        const [postsRes, tweetsRes] = await Promise.all([
-          api
-            .get(`/posts?userId=${targetId}`)
-            .catch(() => ({ data: { posts: [] } })),
-          api
-            .get(`/tweets?userId=${targetId}`)
-            .catch(() => ({ data: { tweets: [] } })),
-        ]);
-
-        setPosts(postsRes.data.posts || []);
-        setUserTweets(tweetsRes.data.tweets || []);
       } catch (error) {
         console.error("Failed to fetch profile data", error);
       } finally {
@@ -108,7 +153,7 @@ export default function ProfilePage() {
     };
 
     fetchProfileData();
-  }, [id, currentUser, isOwnProfile]);
+  }, [id, currentUser?._id, isOwnProfile]);
 
   const handleFollow = async () => {
     if (!displayUser) return;
@@ -224,15 +269,7 @@ export default function ProfilePage() {
 
               {/* Banner Overlay & Edit Button for Owner */}
               {isOwnProfile && (
-                <div
-                  className="absolute inset-0 bg-black/0 group-hover/banner:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover/banner:opacity-100 cursor-pointer"
-                  onClick={() =>
-                    document.getElementById("banner-upload")?.click()
-                  }
-                >
-                  <span className="bg-black/50 text-white px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-md">
-                    Change Banner
-                  </span>
+                <>
                   <input
                     id="banner-upload"
                     type="file"
@@ -244,19 +281,37 @@ export default function ProfilePage() {
                       try {
                         const formData = new FormData();
                         formData.append("image", file);
-                        // Assuming we have a generic or specific route, defaulting to a shared one or user one
-                        // You might need to add this route to your frontend `api` calls or `user.routes.js`
-                        await api.put("/users/banner-picture", formData, {
+                        const endpoint =
+                          currentUser?.role === "minister"
+                            ? "/ministers/banner-picture"
+                            : "/users/banner-picture";
+                        await api.put(endpoint, formData, {
                           headers: { "Content-Type": "multipart/form-data" },
                         });
+                        toast.success("Banner updated successfully!");
                         window.location.reload();
                       } catch (err) {
                         console.error("Banner upload failed", err);
-                        alert("Failed to upload banner");
+                        toast.error(
+                          err.response?.data?.message ||
+                            "Failed to upload banner. Please try again.",
+                        );
                       }
                     }}
                   />
-                </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      document.getElementById("banner-upload")?.click()
+                    }
+                    className="absolute inset-0 bg-black/0 group-hover/banner:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover/banner:opacity-100 cursor-pointer w-full h-full border-0"
+                    aria-label="Change banner"
+                  >
+                    <span className="bg-black/50 text-white px-4 py-2 rounded-full text-sm font-semibold backdrop-blur-md pointer-events-none">
+                      Change Banner
+                    </span>
+                  </button>
+                </>
               )}
             </div>
 
@@ -266,14 +321,7 @@ export default function ProfilePage() {
                   <img
                     src={displayUser?.profilePic || "/logo2.jpg"}
                     alt="Profile"
-                    className={`w-32 h-32 rounded-full border-4 border-white dark:border-black object-cover bg-white ${
-                      isOwnProfile ? "cursor-pointer" : ""
-                    }`}
-                    onClick={() => {
-                      if (isOwnProfile && !uploadingProfilePic) {
-                        document.getElementById("profile-pic-upload")?.click();
-                      }
-                    }}
+                    className="w-32 h-32 rounded-full border-4 border-white dark:border-black object-cover bg-white"
                   />
                   {isOwnProfile && (
                     <>
@@ -291,11 +339,20 @@ export default function ProfilePage() {
                         </div>
                       )}
                       {!uploadingProfilePic && (
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100">
-                          <span className="text-white text-xs font-semibold">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            document
+                              .getElementById("profile-pic-upload")
+                              ?.click()
+                          }
+                          className="absolute inset-0 bg-black/0 group-hover:bg-black/40 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 cursor-pointer border-0"
+                          aria-label="Change profile picture"
+                        >
+                          <span className="text-white text-xs font-semibold pointer-events-none">
                             Change
                           </span>
-                        </div>
+                        </button>
                       )}
                     </>
                   )}

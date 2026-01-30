@@ -169,6 +169,33 @@ export const updateMinisterProfilePicture = asyncHandler(async (req, res) => {
   });
 });
 
+export const updateMinisterBanner = asyncHandler(async (req, res) => {
+  const imageFile = req.file;
+
+  if (!imageFile) {
+    throw new ApiError(400, "Banner image file is required");
+  }
+
+  // Upload to Cloudinary
+  const imageUrl = await uploadToCloudinary(
+    imageFile.buffer,
+    "onechurch/banners",
+  );
+
+  // Update minister's banner picture
+  const minister = await Minister.findByIdAndUpdate(
+    req.user?._id,
+    { $set: { bannerPic: imageUrl } },
+    { new: true },
+  ).select("-password -refreshToken");
+
+  return res.status(200).json({
+    minister,
+    bannerPic: imageUrl,
+    message: "Banner updated successfully",
+  });
+});
+
 export const getAllMinisters = asyncHandler(async (req, res) => {
   const ministers = await Minister.find().select("-password -refreshToken");
   return res.status(200).json({ ministers });

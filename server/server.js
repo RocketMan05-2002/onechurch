@@ -55,6 +55,15 @@ app.get("/", (req, res) => {
   res.send("OneChurch API is running...");
 });
 
+// Health check endpoint for keep-alive
+app.get("/api/v1/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
+});
+
 // Global Error Handler
 app.use((err, req, res, next) => {
   console.error("❌ Error:", err);

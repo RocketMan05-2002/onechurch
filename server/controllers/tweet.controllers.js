@@ -54,7 +54,8 @@ export const getTweets = asyncHandler(async (req, res) => {
   if (userId) filter.author = userId;
 
   const tweets = await Tweet.find(filter)
-    .populate("author", "fullName profilePic")
+    .populate("author", "fullName profilePic username")
+    .populate("retweetedFrom", "fullName profilePic username")
     .sort({ createdAt: -1 });
 
   return res.status(200).json({ tweets });
@@ -237,7 +238,11 @@ export const retweetTweet = asyncHandler(async (req, res) => {
   const tweetId = req.params.id;
   const { comment } = req.body; // Optional comment on retweet
 
-  const originalTweet = await Tweet.findById(tweetId);
+  // Populate original tweet with author info
+  const originalTweet = await Tweet.findById(tweetId).populate(
+    "author",
+    "fullName profilePic username",
+  );
   if (!originalTweet) {
     throw new ApiError(404, "Tweet not found");
   }
@@ -270,17 +275,21 @@ export const retweetTweet = asyncHandler(async (req, res) => {
   originalTweet.retweetModel = userModel;
   await originalTweet.save();
 
-  // Create a retweet tweet
+  // Create a retweet tweet - COPY original content and media
   const retweet = await Tweet.create({
-    content: comment || "",
+    content: originalTweet.content, // Copy original content
+    media: originalTweet.media, // Copy original media
     author: req.user._id,
     authorModel: userModel,
     originalTweet: tweetId,
     isRetweet: true,
+    retweetedFrom: originalTweet.author._id, // Store original author ID
+    retweetedFromModel: originalTweet.authorModel, // Store original author model
   });
 
   const populatedRetweet = await Tweet.findById(retweet._id)
-    .populate("author", "fullName profilePic")
+    .populate("author", "fullName profilePic username")
+    .populate("retweetedFrom", "fullName profilePic username")
     .populate("originalTweet");
 
   return res.status(201).json({

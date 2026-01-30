@@ -105,11 +105,9 @@ export default function SearchSidebar() {
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {item.name || item.fullName}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      {activeTab === "churches"
-                        ? item.address
-                        : `@${item.username}`}
-                    </p>
+                    {activeTab === "churches" && item.address && (
+                      <p className="text-xs text-gray-500">{item.address}</p>
+                    )}
                   </div>
                 </div>
               ))

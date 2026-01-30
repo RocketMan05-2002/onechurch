@@ -5,6 +5,7 @@ import {
   getMinisterProfile,
   updateMinisterProfile,
   updateMinisterProfilePicture,
+  updateMinisterBanner,
   getAllMinisters,
   getRecommendedMinisters,
   recordMinisterAmen,
@@ -26,6 +27,12 @@ router.put(
   verifyJwt,
   upload.single("image"),
   updateMinisterProfilePicture,
+);
+router.put(
+  "/banner-picture",
+  verifyJwt,
+  upload.single("image"),
+  updateMinisterBanner,
 );
 router.post("/amen", verifyJwt, recordMinisterAmen);
 

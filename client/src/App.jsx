@@ -6,6 +6,7 @@ import {
   Outlet,
 } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
+import useKeepAlive from "./hooks/useKeepAlive";
 
 // Pages
 import HomePage from "./pages/HomePage";
@@ -33,6 +34,11 @@ const PublicRoute = () => {
 };
 
 function App() {
+  const { user } = useAuth();
+
+  // Enable keep-alive only when user is logged in
+  useKeepAlive(!!user, 4 * 60 * 1000); // Ping every 4 minutes
+
   return (
     <Router>
       <Routes>

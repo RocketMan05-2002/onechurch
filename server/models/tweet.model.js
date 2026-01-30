@@ -67,6 +67,15 @@ const tweetSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Original author for retweets
+    retweetedFrom: {
+      type: mongoose.Schema.Types.ObjectId,
+      refPath: "retweetedFromModel",
+    },
+    retweetedFromModel: {
+      type: String,
+      enum: ["User", "Minister"],
+    },
     replies: [
       {
         type: mongoose.Schema.Types.ObjectId,

@@ -32,3 +32,32 @@
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
 }
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  /* Better touch targets */
+  button,
+  a {
+    min-height: 44px;
+  }
+
+  /* Smooth scrolling */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Remove tap highlight */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
