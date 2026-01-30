@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   registerMinister,
   loginMinister,
+  logoutMinister,
   getMinisterProfile,
   updateMinisterProfile,
   updateMinisterProfilePicture,
@@ -17,6 +18,7 @@ const router = Router();
 
 router.post("/register", registerMinister);
 router.post("/login", loginMinister);
+router.post("/logout", verifyJwt, logoutMinister);
 router.get("/all", getAllMinisters);
 router.get("/recommended", getRecommendedMinisters);
 router.get("/profile/me", verifyJwt, getMinisterProfile);

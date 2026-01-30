@@ -261,3 +261,22 @@ export const recordMinisterAmen = asyncHandler(async (req, res) => {
     prayerStreak: streak,
   });
 });
+
+export const logoutMinister = asyncHandler(async (req, res) => {
+  // Clear refresh token from database
+  await Minister.findByIdAndUpdate(req.user?._id, {
+    $set: { refreshToken: undefined },
+  });
+
+  const options = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+  };
+
+  return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json({ message: "Logged out successfully" });
+});

@@ -102,10 +102,9 @@ export const ForumProvider = ({ children }) => {
         },
       });
 
-      // Add author info for immediate UI update
-      const newTweet = { ...data.tweet, author: user };
-      setTweets((prev) => [newTweet, ...prev]);
-      return newTweet;
+      // Don't add to local state - WebSocket 'new-tweet' event will handle it
+      // This prevents duplicate tweets with same key
+      return data.tweet;
     } catch (error) {
       console.error("Post tweet failed", error);
       throw error;
