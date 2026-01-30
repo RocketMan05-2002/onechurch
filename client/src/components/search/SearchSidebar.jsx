@@ -5,7 +5,7 @@ import { useSearch } from "../../context/SearchContext";
 
 export default function SearchSidebar() {
   const [query, setQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("churches");
+  const [activeTab, setActiveTab] = useState("ministers");
   const navigate = useNavigate();
 
   const { results, performSearch, loading } = useSearch();
@@ -43,7 +43,7 @@ export default function SearchSidebar() {
 
       {/* Tabs */}
       <div className="flex gap-2">
-        {["churches", "users"].map((tab) => (
+        {["ministers", "users"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -94,9 +94,7 @@ export default function SearchSidebar() {
                     "
                 >
                   <img
-                    src={
-                      item.profilePic || item.avatarUrl || "/default-avatar.png"
-                    }
+                    src={item.profilePic || item.avatarUrl || "/logo2.jpg"}
                     className="w-10 h-10 rounded-full object-cover bg-gray-200"
                     alt=""
                   />
@@ -105,7 +103,7 @@ export default function SearchSidebar() {
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {item.name || item.fullName}
                     </p>
-                    {activeTab === "churches" && item.address && (
+                    {activeTab === "ministers" && item.address && (
                       <p className="text-xs text-gray-500">{item.address}</p>
                     )}
                   </div>

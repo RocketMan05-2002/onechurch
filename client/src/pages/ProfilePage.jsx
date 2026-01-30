@@ -77,9 +77,15 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
+        // Wait for auth to finish loading
+        if (authLoading) {
+          return;
+        }
+
         const targetId = id || currentUser?._id || currentUser?.id;
 
         if (!targetId || targetId === "undefined") {
+          setLoading(false);
           return;
         }
 
@@ -153,7 +159,7 @@ export default function ProfilePage() {
     };
 
     fetchProfileData();
-  }, [id, currentUser?._id, isOwnProfile]);
+  }, [id, currentUser?._id, isOwnProfile, authLoading]);
 
   const handleFollow = async () => {
     if (!displayUser) return;
