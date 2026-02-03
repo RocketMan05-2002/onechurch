@@ -47,7 +47,13 @@ export const AuthProvider = ({ children }) => {
     const userData = data.user || data.minister;
     userData.role = isMinister ? "minister" : "user";
     setUser(userData);
+
+    // Store both role and token in localStorage
     localStorage.setItem("role", isMinister ? "minister" : "user");
+    if (data.accessToken) {
+      localStorage.setItem("accessToken", data.accessToken);
+    }
+
     return data;
   };
 
@@ -78,6 +84,7 @@ export const AuthProvider = ({ children }) => {
 
     setUser(null);
     localStorage.removeItem("role");
+    localStorage.removeItem("accessToken");
 
     try {
       await api.post(endpoint);
