@@ -37,7 +37,9 @@ export default function ProfilePage() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const isOwnProfile = !id || id === currentUser?._id || id === currentUser?.id;
-  const displayUser = isOwnProfile ? currentUser : profileUser;
+  // Prioritize profileUser (fetched full data) over currentUser (context partial data)
+  // ONLY use currentUser as fallback or for ID checks.
+  const displayUser = profileUser || (isOwnProfile ? currentUser : null);
 
   const handleProfilePicUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -102,55 +104,55 @@ export default function ProfilePage() {
 
         setLoading(true);
 
-        // Fetch user profile if viewing someone else
-        if (!isOwnProfile) {
-          const profileRes = await api.get(`/users/${id}/profile`);
-          const userData = profileRes.data.user || profileRes.data.minister;
-          setProfileUser(userData);
+        // ALWAYS fetch the full profile data from the API, even for own profile.
+        // This fixes the issue where 'currentUser' context has incomplete data (missing bio, banner, etc.)
+        // immediately after login.
 
-          // Check if following
-          const isFollowingUser = currentUser?.following?.some(
+        // 1. Fetch User Data
+        let userData = null;
+        let isFollowingUser = false;
+
+        if (isOwnProfile) {
+          // For own profile, try to get from /me endpoint via the specific ID to ensure we get "Profile" view
+          // Actually, we can just use the generic profile endpoint
+          const profileRes = await api.get(`/users/${targetId}/profile`);
+          userData = profileRes.data.user || profileRes.data.minister;
+        } else {
+          const profileRes = await api.get(`/users/${id}/profile`);
+          userData = profileRes.data.user || profileRes.data.minister;
+
+          // Check following status
+          isFollowingUser = currentUser?.following?.some(
             (f) => f.targetId === id || f.targetId?._id === id,
           );
           setIsFollowing(!!isFollowingUser);
-
-          // Fetch posts and tweets in parallel
-          const [postsRes, tweetsRes] = await Promise.all([
-            api
-              .get(`/posts?userId=${targetId}`)
-              .catch(() => ({ data: { posts: [] } })),
-            api
-              .get(`/tweets?userId=${targetId}`)
-              .catch(() => ({ data: { tweets: [] } })),
-          ]);
-
-          const postsData = postsRes.data.posts || [];
-          const tweetsData = tweetsRes.data.tweets || [];
-
-          setPosts(postsData);
-          setUserTweets(tweetsData);
-
-          // Cache the data
-          setCache({
-            user: userData,
-            posts: postsData,
-            tweets: tweetsData,
-            isFollowing: !!isFollowingUser,
-          });
-        } else {
-          // For own profile, just fetch posts and tweets
-          const [postsRes, tweetsRes] = await Promise.all([
-            api
-              .get(`/posts?userId=${targetId}`)
-              .catch(() => ({ data: { posts: [] } })),
-            api
-              .get(`/tweets?userId=${targetId}`)
-              .catch(() => ({ data: { tweets: [] } })),
-          ]);
-
-          setPosts(postsRes.data.posts || []);
-          setUserTweets(tweetsRes.data.tweets || []);
         }
+
+        setProfileUser(userData);
+
+        // 2. Fetch Content (Posts/Tweets)
+        const [postsRes, tweetsRes] = await Promise.all([
+          api
+            .get(`/posts?userId=${targetId}`)
+            .catch(() => ({ data: { posts: [] } })),
+          api
+            .get(`/tweets?userId=${targetId}`)
+            .catch(() => ({ data: { tweets: [] } })),
+        ]);
+
+        const postsData = postsRes.data.posts || [];
+        const tweetsData = tweetsRes.data.tweets || [];
+
+        setPosts(postsData);
+        setUserTweets(tweetsData);
+
+        // Cache the data (for everyone)
+        setCache({
+          user: userData,
+          posts: postsData,
+          tweets: tweetsData,
+          isFollowing: !!isFollowingUser,
+        });
       } catch (error) {
         console.error("Failed to fetch profile data", error);
       } finally {

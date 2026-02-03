@@ -64,10 +64,10 @@ export const AuthProvider = ({ children }) => {
     const endpoint = isMinister ? "/ministers/register" : "/users/register";
     const { data } = await api.post(endpoint, payload);
 
-    const userData = data.user || data.minister;
-    userData.role = isMinister ? "minister" : "user";
-    setUser(userData);
-    localStorage.setItem("role", isMinister ? "minister" : "user");
+    // No longer auto-login
+    // setUser(userData);
+    // localStorage.setItem("role", ...);
+
     return data;
   };
 

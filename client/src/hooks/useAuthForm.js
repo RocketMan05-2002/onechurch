@@ -36,21 +36,14 @@ export function useAuthForm() {
       return;
     }
     try {
-      await register(formData, formData.role); // Role passed if needed on signup?
-      // Actually signup creates a user or church.
-      // User/Church creation APIs are separate.
-      // CreateAccountUI doesn't have a role selector!
-      // It assumes "User" probably? Or does it?
-      // LoginUI HAS a role selector.
-      // If "Signup" mode, we might need to know if it's church or user signup?
-      // The current CreateAccountUI is generic.
-      // I will assume defaults to 'user' unless we add role selector to signup.
-      // For now let's default to 'user' for signup.
-
-      // Wait, requirements said "at backend ... login and signup is done".
-      // Backend User/Church logic is separate.
-      // I should probably add role selector to Signup too or assume 'user' for now.
-      // I'll assume 'user'.
+      await register(formData, formData.role);
+      // Success! Now switch to login mode.
+      setMode("login");
+      setError(""); // Clear any prev errors
+      setFormData((prev) => ({ ...prev, password: "" })); // Clear password
+      // Ideally show a toast or message here, but we'll let the UI handle "state change" for now
+      // or set a temporary success message in error field?
+      alert("Account created successfully! Please log in."); // Simple feedback
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || "Signup failed");
