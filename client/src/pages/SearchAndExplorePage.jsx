@@ -21,19 +21,19 @@ export default function SearchAndExplorePage() {
         <SidebarMenuPopup onClose={() => setShowMobileMenu(false)} />
       )}
 
-      <div className="flex">
+      <div className="flex flex-col lg:flex-row h-screen overflow-hidden">
         {/* Left Sidebar - Hidden on mobile */}
-        <div className="hidden lg:block w-60 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 h-screen sticky top-0">
+        <div className="hidden lg:block w-60 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 h-full overflow-y-auto">
           <LeftSidebar />
         </div>
 
         {/* Search Column - Full width on mobile, sidebar on desktop */}
-        <div className="w-full lg:w-80 flex-shrink-0 lg:border-r border-gray-200 dark:border-gray-700 pt-14 lg:pt-0">
+        <div className="w-full lg:w-80 flex-shrink-0 lg:border-r border-gray-200 dark:border-gray-700 pt-14 lg:pt-0 h-auto lg:h-full overflow-y-auto z-10 bg-gray-50 dark:bg-gray-950">
           <SearchSidebar />
         </div>
 
-        {/* Explore Grid - Hidden on mobile (search results show instead) */}
-        <div className="hidden lg:block flex-1 overflow-y-auto pb-16 lg:pb-0">
+        {/* Explore Grid - Visible on mobile now, stacking below search */}
+        <div className="flex-1 overflow-y-auto pb-20 lg:pb-0 h-full">
           <ExploreGrid onPostClick={setSelectedPost} />
         </div>
       </div>

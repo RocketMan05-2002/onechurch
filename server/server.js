@@ -17,10 +17,34 @@ initializeSocket(httpServer);
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  process.env.CORS_ORIGIN,
+  "https://believers-ark.vercel.app/", // Add your explicit Vercel domain here if known
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN, // e.g., http://localhost:5173
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      if (
+        allowedOrigins.indexOf(origin) !== -1 ||
+        origin.includes("vercel.app")
+      ) {
+        // Trust the origin if it's in our list or is a vercel preview
+        callback(null, true);
+      } else {
+        // For development, you might want to log this to debug connection issues
+        console.log("Blocked by CORS:", origin);
+        callback(null, false);
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   }),
 );
 
